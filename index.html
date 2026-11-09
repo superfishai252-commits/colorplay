@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ColorPlay — A 10-Minute Color & Sound Session</title>
-<meta name="description" content="ColorPlay gently fills your iPad with red, blue, green and purple — each color held for 5 seconds with its own unique soundtrack — while a timer tracks a calm 10-minute session.">
+<title>ColorPlay — A 10-Minute Color &amp; Sound Session</title>
+<meta name="description" content="ColorPlay gently fills your iPad with red, blue, green and purple — each color glowing with its own unique sound, adjustable from 1 to 5 seconds — while a timer tracks a calm 10-minute session.">
 <meta name="theme-color" content="#0d1420">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,848 +20,197 @@
     --ink-dim: rgba(242,246,252,.62);
     --pill: rgba(10,16,26,.42);
     --pill-border: rgba(255,255,255,.14);
-    --red:    #ff6a5f;
-    --blue:   #57b6ff;
-    --green:  #4de08a;
+    --red: #ff6a5f;
+    --blue: #57b6ff;
+    --green: #4de08a;
     --purple: #c084fc;
-    --safe-top:    env(safe-area-inset-top, 0px);
+    --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
-    --safe-left:   env(safe-area-inset-left, 0px);
-    --safe-right:  env(safe-area-inset-right, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
   }
   *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{ height:100%; overflow:hidden; }
-  body{
-    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:#0d1420;
-    color:var(--ink);
-    position:fixed; inset:0;
-    user-select:none; -webkit-user-select:none;
-    touch-action:manipulation;
-    overscroll-behavior:none;
-  }
-
-  /* ============ STAGE (color layers) ============ */
+  body{ font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif; background:#0d1420; color:var(--ink); position:fixed; inset:0; user-select:none; -webkit-user-select:none; touch-action:manipulation; overscroll-behavior:none; }
   .stage{ position:fixed; inset:0; z-index:0; }
-  .layer{
-    position:absolute; inset:-2%;
-    opacity:0;
-    transition:opacity 1.15s cubic-bezier(.4,0,.2,1);
-    will-change:opacity;
-  }
+  .layer{ position:absolute; inset:-2%; opacity:0; transition:opacity 1.15s cubic-bezier(.4,0,.2,1); will-change:opacity; }
   .layer.active{ opacity:1; }
-  .layer.idle{
-    background:
-      radial-gradient(120% 90% at 50% -10%, #1d2a3c 0%, rgba(29,42,60,0) 60%),
-      radial-gradient(90% 70% at 50% 115%, #18202f 0%, rgba(24,32,47,0) 55%),
-      linear-gradient(180deg,#141d2b 0%,#0d1420 100%);
-  }
-  .layer.red{
-    background:
-      radial-gradient(130% 100% at 50% -20%, #ff8f84 0%, rgba(255,143,132,0) 55%),
-      radial-gradient(90% 80% at 50% 120%, #b3251b 0%, rgba(179,37,27,0) 60%),
-      linear-gradient(165deg,#ff6a5f 0%,#e0442f 58%,#c03324 100%);
-  }
-  .layer.blue{
-    background:
-      radial-gradient(130% 100% at 50% -20%, #8ed2ff 0%, rgba(142,210,255,0) 55%),
-      radial-gradient(90% 80% at 50% 120%, #173e8f 0%, rgba(23,62,143,0) 60%),
-      linear-gradient(165deg,#57b6ff 0%,#2f7bf0 58%,#2057c9 100%);
-  }
-  .layer.green{
-    background:
-      radial-gradient(130% 100% at 50% -20%, #96f7b8 0%, rgba(150,247,184,0) 55%),
-      radial-gradient(90% 80% at 50% 120%, #106b3a 0%, rgba(16,107,58,0) 60%),
-      linear-gradient(165deg,#4de08a 0%,#22b863 58%,#128a48 100%);
-  }
-  .layer.purple{
-    background:
-      radial-gradient(130% 100% at 50% -20%, #ddb0ff 0%, rgba(221,176,255,0) 55%),
-      radial-gradient(90% 80% at 50% 120%, #4c1d95 0%, rgba(76,29,149,0) 60%),
-      linear-gradient(165deg,#c084fc 0%,#8b3fe0 58%,#6d28c9 100%);
-  }
-
-  /* soft drifting light orbs for depth */
-  .orb{
-    position:absolute; border-radius:50%;
-    filter:blur(70px); opacity:.35; pointer-events:none;
-    animation:drift 16s ease-in-out infinite alternate;
-  }
+  .layer.idle{ background:radial-gradient(120% 90% at 50% -10%, #1d2a3c 0%, rgba(29,42,60,0) 60%),radial-gradient(90% 70% at 50% 115%, #18202f 0%, rgba(24,32,47,0) 55%),linear-gradient(180deg,#141d2b 0%,#0d1420 100%); }
+  .layer.red{ background:radial-gradient(130% 100% at 50% -20%, #ff8f84 0%, rgba(255,143,132,0) 55%),radial-gradient(90% 80% at 50% 120%, #b3251b 0%, rgba(179,37,27,0) 60%),linear-gradient(165deg,#ff6a5f 0%,#e0442f 58%,#c03324 100%); }
+  .layer.blue{ background:radial-gradient(130% 100% at 50% -20%, #8ed2ff 0%, rgba(142,210,255,0) 55%),radial-gradient(90% 80% at 50% 120%, #173e8f 0%, rgba(23,62,143,0) 60%),linear-gradient(165deg,#57b6ff 0%,#2f7bf0 58%,#2057c9 100%); }
+  .layer.green{ background:radial-gradient(130% 100% at 50% -20%, #96f7b8 0%, rgba(150,247,184,0) 55%),radial-gradient(90% 80% at 50% 120%, #106b3a 0%, rgba(16,107,58,0) 60%),linear-gradient(165deg,#4de08a 0%,#22b863 58%,#128a48 100%); }
+  .layer.purple{ background:radial-gradient(130% 100% at 50% -20%, #ddb0ff 0%, rgba(221,176,255,0) 55%),radial-gradient(90% 80% at 50% 120%, #4c1d95 0%, rgba(76,29,149,0) 60%),linear-gradient(165deg,#c084fc 0%,#8b3fe0 58%,#6d28c9 100%); }
+  .orb{ position:absolute; border-radius:50%; filter:blur(70px); opacity:.35; pointer-events:none; animation:drift 16s ease-in-out infinite alternate; }
   .orb.o1{ width:38vmin; height:38vmin; background:rgba(255,255,255,.55); top:12%; left:8%; }
   .orb.o2{ width:30vmin; height:30vmin; background:rgba(255,255,255,.4); bottom:16%; right:10%; animation-delay:-6s; animation-duration:20s; }
   .orb.o3{ width:22vmin; height:22vmin; background:rgba(255,255,255,.35); top:38%; left:62%; animation-delay:-11s; animation-duration:23s; }
-  @keyframes drift{
-    0%  { transform:translate(0,0) scale(1); }
-    50% { transform:translate(4vmin,-5vmin) scale(1.12); }
-    100%{ transform:translate(-4vmin,4vmin) scale(.94); }
-  }
-
-  /* ============ TOP BAR ============ */
-  .topbar{
-    position:fixed; z-index:5; left:0; right:0; top:0;
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-    padding:calc(var(--safe-top) + 14px) calc(var(--safe-right) + 18px) 12px calc(var(--safe-left) + 18px);
-  }
-  .pill{
-    background:var(--pill);
-    border:1px solid var(--pill-border);
-    border-radius:22px;
-    backdrop-filter:blur(18px) saturate(1.3);
-    -webkit-backdrop-filter:blur(18px) saturate(1.3);
-    box-shadow:0 8px 32px rgba(0,0,0,.28);
-  }
-  .brand{
-    display:flex; align-items:center; gap:11px;
-    padding:9px 18px 9px 10px;
-  }
+  @keyframes drift{ 0%{transform:translate(0,0) scale(1)} 50%{transform:translate(4vmin,-5vmin) scale(1.12)} 100%{transform:translate(-4vmin,4vmin) scale(.94)} }
+  .topbar{ position:fixed; z-index:5; left:0; right:0; top:0; display:flex; align-items:center; justify-content:space-between; gap:12px; padding:calc(var(--safe-top) + 14px) calc(var(--safe-right) + 18px) 12px calc(var(--safe-left) + 18px); }
+  .pill{ background:var(--pill); border:1px solid var(--pill-border); border-radius:22px; backdrop-filter:blur(18px) saturate(1.3); -webkit-backdrop-filter:blur(18px) saturate(1.3); box-shadow:0 8px 32px rgba(0,0,0,.28); }
+  .brand{ display:flex; align-items:center; gap:11px; padding:9px 18px 9px 10px; }
   .brand img{ width:38px; height:38px; border-radius:11px; display:block; }
   .brand-name{ font-size:17px; font-weight:800; letter-spacing:.01em; }
   .brand-tag{ display:block; font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-dim); }
-
   .timer-pill{ padding:10px 22px 12px; min-width:min(46vw, 340px); }
   .timer-row{ display:flex; align-items:center; gap:14px; }
   .timer-icon{ flex:0 0 auto; opacity:.85; }
-  .timer{
-    font-size:clamp(30px, 4.6vw, 42px);
-    font-weight:800; line-height:1;
-    font-variant-numeric:tabular-nums;
-    letter-spacing:.02em;
-  }
+  .timer{ font-size:clamp(30px, 4.6vw, 42px); font-weight:800; line-height:1; font-variant-numeric:tabular-nums; letter-spacing:.02em; }
   .timer-sub{ font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-dim); margin-top:4px; }
-  .progress-track{
-    margin-top:9px; height:5px; width:100%;
-    background:rgba(255,255,255,.16); border-radius:99px; overflow:hidden;
-  }
-  .progress-fill{
-    height:100%; width:100%;
-    background:linear-gradient(90deg,#ffffff,#ffd9a0);
-    border-radius:99px;
-    transform-origin:0 50%; transform:scaleX(0);
-    transition:transform .25s linear;
-  }
-
+  .progress-track{ margin-top:9px; height:5px; width:100%; background:rgba(255,255,255,.16); border-radius:99px; overflow:hidden; }
+  .progress-fill{ height:100%; width:100%; background:linear-gradient(90deg,#ffffff,#ffd9a0); border-radius:99px; transform-origin:0 50%; transform:scaleX(0); transition:transform .25s linear; }
   .icon-cluster{ display:flex; gap:10px; }
-  .icon-btn{
-    width:52px; height:52px; border-radius:18px;
-    border:1px solid var(--pill-border);
-    background:var(--pill);
-    backdrop-filter:blur(18px) saturate(1.3);
-    -webkit-backdrop-filter:blur(18px) saturate(1.3);
-    box-shadow:0 8px 32px rgba(0,0,0,.28);
-    color:var(--ink); cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    transition:transform .15s ease, background .2s ease;
-  }
+  .icon-btn{ width:52px; height:52px; border-radius:18px; border:1px solid var(--pill-border); background:var(--pill); backdrop-filter:blur(18px) saturate(1.3); -webkit-backdrop-filter:blur(18px) saturate(1.3); box-shadow:0 8px 32px rgba(0,0,0,.28); color:var(--ink); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:transform .15s ease, background .2s ease; }
   .icon-btn:active{ transform:scale(.92); }
   .icon-btn:focus-visible{ outline:3px solid rgba(255,255,255,.7); outline-offset:2px; }
-
-  /* ============ CENTER STAGE CONTENT ============ */
-  .center{
-    position:fixed; z-index:4; inset:0;
-    display:flex; flex-direction:column; align-items:center; justify-content:center;
-    text-align:center; padding:0 24px;
-    pointer-events:none;
-  }
-
+  .icon-btn.audio-error{ border-color:rgba(255,107,95,.65); color:#ffb3ac; }
+  .center{ position:fixed; z-index:4; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:0 24px 150px; pointer-events:none; }
   .idle-hero{ display:flex; flex-direction:column; align-items:center; gap:clamp(10px,2vh,22px); transition:opacity .5s ease, transform .5s ease; }
   .idle-hero.hidden{ opacity:0; transform:scale(.92); pointer-events:none; }
-  .hero-icon{
-    width:clamp(110px, 17vmin, 168px); height:auto; border-radius:26%;
-    box-shadow:0 24px 70px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.12) inset;
-    animation:heroFloat 5.5s ease-in-out infinite;
-  }
-  @keyframes heroFloat{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-12px); } }
+  .hero-icon{ width:clamp(110px, 17vmin, 168px); height:auto; border-radius:26%; box-shadow:0 24px 70px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.12) inset; animation:heroFloat 5.5s ease-in-out infinite; }
+  @keyframes heroFloat{ 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
   .idle-title{ font-size:clamp(34px,5.4vw,58px); font-weight:800; letter-spacing:-.02em; }
   .idle-sub{ max-width:520px; font-size:clamp(14px,1.6vw,17px); line-height:1.55; color:var(--ink-dim); font-weight:500; }
   .idle-chips{ display:flex; gap:8px; margin-top:2px; flex-wrap:wrap; justify-content:center; }
-  .chip{
-    font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
-    padding:7px 14px; border-radius:99px;
-    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:var(--ink-dim);
-  }
+  .chip{ font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; padding:7px 14px; border-radius:99px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:var(--ink-dim); }
   .chip b{ color:var(--ink); font-weight:800; }
-
   .color-view{ display:flex; flex-direction:column; align-items:center; gap:clamp(14px,2.4vh,26px); transition:opacity .45s ease; }
   .color-view.hidden{ opacity:0; }
   .color-kicker{ font-size:12px; font-weight:700; letter-spacing:.34em; text-transform:uppercase; color:rgba(255,255,255,.75); }
-  .color-name{
-    font-size:clamp(84px, 17vw, 168px);
-    font-weight:800; letter-spacing:-.03em; line-height:.95;
-    color:#fff; text-shadow:0 4px 60px rgba(0,0,0,.35);
-  }
+  .color-name{ font-size:clamp(72px, 14.5vmin, 150px); font-weight:800; letter-spacing:-.03em; line-height:.95; color:#fff; text-shadow:0 4px 60px rgba(0,0,0,.35); }
   .color-name.pop{ animation:namePop .8s cubic-bezier(.2,1.4,.35,1); }
-  @keyframes namePop{
-    0%{ transform:scale(.72); opacity:0; filter:blur(6px); }
-    100%{ transform:scale(1); opacity:1; filter:blur(0); }
-  }
-  .countdown-track{
-    width:min(46vw, 300px); height:7px; border-radius:99px;
-    background:rgba(255,255,255,.25); overflow:hidden;
-  }
-  .countdown-fill{
-    height:100%; width:100%; background:#fff; border-radius:99px;
-    transform-origin:0 50%; transform:scaleX(1);
-    box-shadow:0 0 12px rgba(255,255,255,.6);
-  }
+  @keyframes namePop{ 0%{transform:scale(.72);opacity:0;filter:blur(6px)} 100%{transform:scale(1);opacity:1;filter:blur(0)} }
+  .countdown-track{ width:min(46vw, 300px); height:7px; border-radius:99px; background:rgba(255,255,255,.25); overflow:hidden; }
+  .countdown-fill{ height:100%; width:100%; background:#fff; border-radius:99px; transform-origin:0 50%; transform:scaleX(1); box-shadow:0 0 12px rgba(255,255,255,.6); }
   .color-next{ font-size:13px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.8); font-variant-numeric:tabular-nums; }
-
-  /* ============ CONTROLS ============ */
-  .controls{
-    position:fixed; z-index:5; left:0; right:0; bottom:0;
-    display:flex; flex-direction:column; align-items:center; gap:16px;
-    padding:0 24px calc(var(--safe-bottom) + 30px);
-  }
-  .status{
-    font-size:12px; font-weight:700; letter-spacing:.22em; text-transform:uppercase;
-    color:var(--ink-dim);
-    background:var(--pill); border:1px solid var(--pill-border);
-    padding:9px 20px; border-radius:99px;
-    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-    transition:opacity .3s ease;
-  }
+  .controls{ position:fixed; z-index:5; left:0; right:0; bottom:0; display:flex; flex-direction:column; align-items:center; gap:16px; padding:0 24px calc(var(--safe-bottom) + 30px); }
+  .status{ font-size:12px; font-weight:700; letter-spacing:.22em; text-transform:uppercase; color:var(--ink-dim); background:var(--pill); border:1px solid var(--pill-border); padding:9px 20px; border-radius:99px; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); transition:opacity .3s ease; }
   .status.hidden{ opacity:0; }
-
-  .play-btn{
-    width:clamp(104px, 15vmin, 138px); height:clamp(104px, 15vmin, 138px);
-    border-radius:50%; border:none; cursor:pointer;
-    display:flex; align-items:center; justify-content:center;
-    background:linear-gradient(180deg,#ffffff 0%,#dfe7f2 100%);
-    box-shadow:0 20px 54px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.6) inset, 0 6px 18px rgba(0,0,0,.25);
-    transition:transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease, background .3s ease;
-    animation:playPulse 2.6s ease-in-out infinite;
-  }
-  @keyframes playPulse{
-    0%,100%{ box-shadow:0 20px 54px rgba(0,0,0,.45), 0 0 0 0 rgba(255,255,255,.35); }
-    50%    { box-shadow:0 20px 54px rgba(0,0,0,.45), 0 0 0 22px rgba(255,255,255,0); }
-  }
+  .play-btn{ width:clamp(104px, 15vmin, 138px); height:clamp(104px, 15vmin, 138px); border-radius:50%; border:none; cursor:pointer; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg,#ffffff 0%,#dfe7f2 100%); box-shadow:0 20px 54px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.6) inset, 0 6px 18px rgba(0,0,0,.25); transition:transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease, background .3s ease; animation:playPulse 2.6s ease-in-out infinite; }
+  @keyframes playPulse{ 0%,100%{box-shadow:0 20px 54px rgba(0,0,0,.45),0 0 0 0 rgba(255,255,255,.35)} 50%{box-shadow:0 20px 54px rgba(0,0,0,.45),0 0 0 22px rgba(255,255,255,0)} }
   .play-btn:hover{ transform:scale(1.05); }
   .play-btn:active{ transform:scale(.93); }
   .play-btn:focus-visible{ outline:4px solid rgba(255,255,255,.75); outline-offset:4px; }
-  .play-btn.playing{
-    background:rgba(255,255,255,.16);
-    border:1.5px solid rgba(255,255,255,.4);
-    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
-    animation:none;
-    box-shadow:0 16px 44px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.12) inset;
-  }
+  .play-btn.playing{ background:rgba(255,255,255,.16); border:1.5px solid rgba(255,255,255,.4); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); animation:none; box-shadow:0 16px 44px rgba(0,0,0,.35),0 0 0 1px rgba(255,255,255,.12) inset; }
   .play-btn svg{ display:block; }
   .play-btn .icon-stop{ display:none; }
   .play-btn.playing .icon-stop{ display:block; }
   .play-btn.playing .icon-play{ display:none; }
-
-  /* ============ COMPLETION OVERLAY ============ */
-  .overlay{
-    position:fixed; inset:0; z-index:20;
-    display:flex; align-items:center; justify-content:center;
-    background:rgba(6,10,18,.62);
-    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
-    opacity:0; pointer-events:none;
-    transition:opacity .45s ease;
-    padding:24px;
-  }
+  .toast{ position:fixed; z-index:40; left:50%; bottom:calc(var(--safe-bottom) + 176px); transform:translate(-50%, 16px); max-width:min(90vw, 420px); background:rgba(16,23,36,.92); border:1px solid rgba(255,255,255,.18); color:var(--ink); font-size:13px; font-weight:600; line-height:1.45; text-align:center; padding:12px 18px; border-radius:16px; box-shadow:0 16px 44px rgba(0,0,0,.45); opacity:0; pointer-events:none; transition:opacity .3s ease, transform .3s ease; }
+  .toast.show{ opacity:1; transform:translate(-50%, 0); }
+  .overlay{ position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center; background:rgba(6,10,18,.62); backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px); opacity:0; pointer-events:none; transition:opacity .45s ease; padding:24px; }
   .overlay.show{ opacity:1; pointer-events:auto; }
-  .overlay-card{
-    width:min(92vw, 470px);
-    background:linear-gradient(180deg,#1b2534 0%,#131b28 100%);
-    border:1px solid rgba(255,255,255,.12);
-    border-radius:30px;
-    padding:clamp(26px,4vh,40px) clamp(22px,4vw,38px);
-    text-align:center;
-    box-shadow:0 40px 90px rgba(0,0,0,.55);
-    transform:translateY(26px) scale(.96);
-    transition:transform .5s cubic-bezier(.2,1.2,.35,1);
-  }
+  .overlay-card{ width:min(92vw, 470px); background:linear-gradient(180deg,#1b2534 0%,#131b28 100%); border:1px solid rgba(255,255,255,.12); border-radius:30px; padding:clamp(26px,4vh,40px) clamp(22px,4vw,38px); text-align:center; box-shadow:0 40px 90px rgba(0,0,0,.55); transform:translateY(26px) scale(.96); transition:transform .5s cubic-bezier(.2,1.2,.35,1); }
   .overlay.show .overlay-card{ transform:translateY(0) scale(1); }
   .overlay-art{ display:flex; justify-content:center; margin-bottom:14px; }
   .overlay-title{ font-size:clamp(28px,4vw,36px); font-weight:800; letter-spacing:-.02em; }
   .overlay-sub{ margin-top:8px; font-size:15px; color:var(--ink-dim); line-height:1.5; }
-  .stats{
-    display:flex; gap:12px; margin:22px 0 24px;
-  }
-  .stat{
-    flex:1; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09);
-    border-radius:20px; padding:16px 10px;
-  }
+  .stats{ display:flex; gap:12px; margin:22px 0 24px; }
+  .stat{ flex:1; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09); border-radius:20px; padding:16px 10px; }
   .stat-num{ font-size:clamp(24px,3.4vw,32px); font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
   .stat-label{ margin-top:5px; font-size:10px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-dim); }
   .overlay-actions{ display:flex; gap:12px; }
-  .btn{
-    flex:1; border:none; cursor:pointer; border-radius:17px;
-    padding:17px 12px; font-size:16px; font-weight:800; letter-spacing:.01em;
-    font-family:inherit; transition:transform .15s ease, filter .2s ease;
-  }
+  .btn{ flex:1; border:none; cursor:pointer; border-radius:17px; padding:17px 12px; font-size:16px; font-weight:800; letter-spacing:.01em; font-family:inherit; transition:transform .15s ease, filter .2s ease; }
   .btn:active{ transform:scale(.96); }
   .btn.primary{ background:linear-gradient(180deg,#ffffff,#dfe7f2); color:#101826; box-shadow:0 10px 30px rgba(0,0,0,.35); }
   .btn.primary:hover{ filter:brightness(1.06); }
   .btn.ghost{ background:rgba(255,255,255,.08); color:var(--ink); border:1px solid rgba(255,255,255,.12); }
   .btn:focus-visible{ outline:3px solid rgba(255,255,255,.7); outline-offset:2px; }
-
+  .setting-group{ display:flex; gap:10px; margin:20px 0 8px; }
+  .seg-btn{ flex:1; cursor:pointer; font-family:inherit; padding:16px 0 14px; border-radius:18px; border:1px solid rgba(255,255,255,.13); background:rgba(255,255,255,.06); color:var(--ink-dim); display:flex; flex-direction:column; align-items:center; gap:2px; transition:transform .15s ease, background .2s ease, color .2s ease; }
+  .seg-btn:active{ transform:scale(.94); }
+  .seg-btn:focus-visible{ outline:3px solid rgba(255,255,255,.7); outline-offset:2px; }
+  .seg-num{ font-size:26px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; }
+  .seg-unit{ font-size:10px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; opacity:.75; }
+  .seg-btn[aria-checked="true"]{ background:linear-gradient(180deg,#ffffff 0%,#dfe7f2 100%); color:#101826; border-color:transparent; box-shadow:0 12px 30px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.55) inset; }
+  .setting-hint{ font-size:13px; color:var(--ink-dim); min-height:1.4em; margin-bottom:16px; font-variant-numeric:tabular-nums; }
+  .setting-hint b{ color:var(--ink); }
+  .diag-row{ display:flex; align-items:center; justify-content:space-between; gap:12px; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09); border-radius:18px; padding:12px 14px; margin-bottom:18px; text-align:left; }
+  .diag-title{ font-size:13px; font-weight:800; letter-spacing:.01em; }
+  .diag-sub{ font-size:11.5px; color:var(--ink-dim); margin-top:4px; line-height:1.45; font-variant-numeric:tabular-nums; }
+  .test-btn{ flex:0 0 auto; cursor:pointer; font-family:inherit; background:rgba(255,255,255,.1); color:var(--ink); border:1px solid rgba(255,255,255,.18); border-radius:14px; padding:12px 16px; font-size:13px; font-weight:800; letter-spacing:.02em; transition:transform .15s ease, background .2s ease; }
+  .test-btn:hover{ background:rgba(255,255,255,.16); }
+  .test-btn:active{ transform:scale(.95); }
+  .test-btn:focus-visible{ outline:3px solid rgba(255,255,255,.7); outline-offset:2px; }
   #confetti{ position:fixed; inset:0; z-index:30; pointer-events:none; }
-
-  /* ============ LAYOUT: PORTRAIT ============ */
-  @media (orientation:portrait){
-    .timer-pill{ min-width:0; padding:8px 18px 10px; }
-    .brand-tag{ display:none; }
-    .brand-name{ font-size:15px; }
-    .brand img{ width:32px; height:32px; }
-    .topbar{ gap:8px; padding-left:calc(var(--safe-left) + 10px); padding-right:calc(var(--safe-right) + 10px); }
-    .icon-btn{ width:46px; height:46px; border-radius:15px; }
-    .timer{ font-size:clamp(24px,6.4vw,34px); }
-    .timer-sub{ display:none; }
-    .timer-icon{ display:none; }
-    .idle-sub{ font-size:15px; padding:0 8px; }
-  }
-  @media (max-width:560px){
-    .brand{ display:none; }
-  }
-
-  @media (prefers-reduced-motion:reduce){
-    .orb, .hero-icon, .play-btn{ animation:none !important; }
-    .layer{ transition:opacity .3s linear; }
-  }
+  @media (orientation:portrait){ .timer-pill{min-width:0;padding:8px 18px 10px}.brand-tag{display:none}.brand-name{font-size:15px}.brand img{width:32px;height:32px}.topbar{gap:8px;padding-left:calc(var(--safe-left) + 10px);padding-right:calc(var(--safe-right) + 10px)}.icon-btn{width:46px;height:46px;border-radius:15px}.timer{font-size:clamp(24px,6.4vw,34px)}.timer-sub,.timer-icon{display:none}.idle-sub{font-size:15px;padding:0 8px}.setting-group{gap:7px}.seg-btn{padding:13px 0 11px;border-radius:15px}.seg-num{font-size:21px} }
+  @media (max-width:560px){ .brand{display:none} }
+  @media (prefers-reduced-motion:reduce){ .orb,.hero-icon,.play-btn{animation:none!important}.layer{transition:opacity .3s linear} }
 </style>
 </head>
 <body>
-
-  <!-- Ambient color stage -->
-  <div class="stage" aria-hidden="true">
-    <div class="layer idle active" data-layer="idle"></div>
-    <div class="layer red"    data-layer="red"></div>
-    <div class="layer blue"   data-layer="blue"></div>
-    <div class="layer green"  data-layer="green"></div>
-    <div class="layer purple" data-layer="purple"></div>
-    <div class="orb o1"></div>
-    <div class="orb o2"></div>
-    <div class="orb o3"></div>
-  </div>
-
-  <!-- Top bar -->
+  <div class="stage" aria-hidden="true"><div class="layer idle active" data-layer="idle"></div><div class="layer red" data-layer="red"></div><div class="layer blue" data-layer="blue"></div><div class="layer green" data-layer="green"></div><div class="layer purple" data-layer="purple"></div><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div></div>
   <header class="topbar">
-    <div class="brand pill">
-      <img src="icon-192.png" alt="ColorPlay app icon" onerror="this.style.display='none'">
-      <div><span class="brand-name">ColorPlay</span><span class="brand-tag">Calm Color Session</span></div>
-    </div>
-
-    <div class="timer-pill pill" role="timer" aria-label="Elapsed time" aria-live="off">
-      <div class="timer-row">
-        <svg class="timer-icon" width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.6" opacity=".9"/>
-          <path d="M12 9.2V13l2.4 1.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M9.5 2.5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-        </svg>
-        <div>
-          <div class="timer" id="timerText">00:00</div>
-          <div class="timer-sub">of 10:00 session</div>
-        </div>
-      </div>
-      <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
-    </div>
-
+    <div class="brand pill"><img src="icon-192.png" alt="ColorPlay app icon" onerror="this.style.display='none'"><div><span class="brand-name">ColorPlay</span><span class="brand-tag">Calm Color Session</span></div></div>
+    <div class="timer-pill pill" role="timer" aria-label="Elapsed time" aria-live="off"><div class="timer-row"><svg class="timer-icon" width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.6" opacity=".9"/><path d="M12 9.2V13l2.4 1.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M9.5 2.5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg><div><div class="timer" id="timerText">00:00</div><div class="timer-sub">of 10:00 session</div></div></div><div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div></div>
     <div class="icon-cluster">
-      <button class="icon-btn" id="soundBtn" aria-label="Toggle sound" aria-pressed="true">
-        <svg id="soundOnIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 9.5v5h3.4L12 18.6V5.4L7.4 9.5H4z" fill="currentColor"/>
-          <path d="M15.5 9.2a4 4 0 010 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-          <path d="M18.2 6.6a7.6 7.6 0 010 10.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-        </svg>
-        <svg id="soundOffIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" style="display:none" aria-hidden="true">
-          <path d="M4 9.5v5h3.4L12 18.6V5.4L7.4 9.5H4z" fill="currentColor"/>
-          <path d="M16 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
-        </svg>
-      </button>
-      <button class="icon-btn" id="fullscreenBtn" aria-label="Toggle fullscreen">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
+      <button class="icon-btn" id="soundBtn" aria-label="Toggle sound" aria-pressed="true" title="Sound on/off"><svg id="soundOnIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9.5v5h3.4L12 18.6V5.4L7.4 9.5H4z" fill="currentColor"/><path d="M15.5 9.2a4 4 0 010 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M18.2 6.6a7.6 7.6 0 010 10.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg><svg id="soundOffIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" style="display:none" aria-hidden="true"><path d="M4 9.5v5h3.4L12 18.6V5.4L7.4 9.5H4z" fill="currentColor"/><path d="M16 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></button>
+      <button class="icon-btn" id="settingsBtn" aria-label="Settings" title="Settings"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z" stroke="currentColor" stroke-width="1.7"/><path d="M19.4 13.5a7.6 7.6 0 000-3l2-1.5-2-3.4-2.3 1a7.7 7.7 0 00-2.6-1.5L14 2.5h-4l-.5 2.6a7.7 7.7 0 00-2.6 1.5l-2.3-1-2 3.4 2 1.5a7.6 7.6 0 000 3l-2 1.5 2 3.4 2.3-1a7.7 7.7 0 002.6 1.5l.5 2.6h4l.5-2.6a7.7 7.7 0 002.6-1.5l2.3 1 2-3.4-2-1.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" opacity=".9"/></svg></button>
+      <button class="icon-btn" id="fullscreenBtn" aria-label="Toggle fullscreen" title="Fullscreen"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     </div>
   </header>
-
-  <!-- Center content -->
   <main class="center">
-    <!-- Idle state -->
-    <section class="idle-hero" id="idleHero">
-      <img class="hero-icon" src="icon-512.png" alt="ColorPlay — four glowing color quadrants" onerror="this.style.display='none'">
-      <h1 class="idle-title">Ready for colors?</h1>
-      <p class="idle-sub">ColorPlay fills your iPad with red, blue, green and purple — each color glowing for five seconds, each with its own musical voice — while the timer tracks a calming ten-minute session.</p>
-      <div class="idle-chips">
-        <span class="chip"><b>4</b> Colors</span>
-        <span class="chip"><b>5s</b> Each</span>
-        <span class="chip"><b>4</b> Unique Sounds</span>
-        <span class="chip"><b>10:00</b> Auto-stop</span>
-      </div>
-    </section>
-
-    <!-- Playing state -->
-    <section class="color-view hidden" id="colorView" aria-live="polite">
-      <div class="color-kicker" id="colorKicker">Color 1</div>
-      <div class="color-name" id="colorName">Red</div>
-      <div class="countdown-track" aria-hidden="true"><div class="countdown-fill" id="countdownFill"></div></div>
-      <div class="color-next" id="colorNext">Next color in 5</div>
-    </section>
+    <section class="idle-hero" id="idleHero"><img class="hero-icon" src="icon-512.png" alt="ColorPlay — four glowing color quadrants" onerror="this.style.display='none'"><h1 class="idle-title">Ready for colors?</h1><p class="idle-sub">ColorPlay fills your iPad with red, blue, green and purple — each color glowing for <span id="idleHoldText">5</span> seconds, each with its own musical voice — while the timer tracks a calming ten-minute session.</p><div class="idle-chips"><span class="chip"><b>4</b> Colors</span><span class="chip"><b id="chipHold">5s</b> Each</span><span class="chip"><b>4</b> Unique Sounds</span><span class="chip"><b>10:00</b> Auto-stop</span></div></section>
+    <section class="color-view hidden" id="colorView" aria-live="polite"><div class="color-kicker" id="colorKicker">Color 1</div><div class="color-name" id="colorName">Red</div><div class="countdown-track" aria-hidden="true"><div class="countdown-fill" id="countdownFill"></div></div><div class="color-next" id="colorNext">Next color in 5</div></section>
   </main>
-
-  <!-- Bottom controls -->
-  <div class="controls">
-    <div class="status" id="statusText">Tap play to begin</div>
-    <button class="play-btn" id="playBtn" aria-label="Start session" aria-pressed="false">
-      <svg class="icon-play" width="52" height="52" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-        <path d="M17.5 12.8c0-2.4 2.6-3.9 4.7-2.7l20.4 11.9c2 1.2 2 4.1 0 5.3L22.2 39.9c-2.1 1.2-4.7-.3-4.7-2.7V12.8z" fill="#101826"/>
-      </svg>
-      <svg class="icon-stop" width="46" height="46" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-        <rect x="11" y="11" width="26" height="26" rx="6" fill="#ffffff"/>
-      </svg>
-    </button>
-  </div>
-
-  <!-- Session-end overlay -->
-  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="overlayTitle" aria-hidden="true">
-    <div class="overlay-card">
-      <div class="overlay-art" aria-hidden="true">
-        <svg width="86" height="86" viewBox="0 0 86 86" fill="none">
-          <circle cx="43" cy="43" r="40" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.16)" stroke-width="1.5"/>
-          <path d="M43 16l6.6 13.4 14.8 2.1-10.7 10.4 2.5 14.7L43 52.6 29.8 59.6l2.5-14.7L21.6 34.5l14.8-2.1L43 16z" fill="#FFD76A" stroke="#B8860B" stroke-width="1.6" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <h2 class="overlay-title" id="overlayTitle">Session complete</h2>
-      <p class="overlay-sub" id="overlaySub">Ten peaceful minutes of color and sound. Beautifully done.</p>
-      <div class="stats">
-        <div class="stat"><div class="stat-num" id="statTime">10:00</div><div class="stat-label">Time Played</div></div>
-        <div class="stat"><div class="stat-num" id="statColors">0</div><div class="stat-label">Colors Shown</div></div>
-        <div class="stat"><div class="stat-num" id="statSounds">0</div><div class="stat-label">Sounds Heard</div></div>
-      </div>
-      <div class="overlay-actions">
-        <button class="btn primary" id="playAgainBtn">Play again</button>
-        <button class="btn ghost" id="doneBtn">Done</button>
-      </div>
-    </div>
-  </div>
-
+  <div class="controls"><div class="status" id="statusText">Tap play to begin</div><button class="play-btn" id="playBtn" aria-label="Start session" aria-pressed="false"><svg class="icon-play" width="52" height="52" viewBox="0 0 48 48" fill="none" aria-hidden="true"><path d="M17.5 12.8c0-2.4 2.6-3.9 4.7-2.7l20.4 11.9c2 1.2 2 4.1 0 5.3L22.2 39.9c-2.1 1.2-4.7-.3-4.7-2.7V12.8z" fill="#101826"/></svg><svg class="icon-stop" width="46" height="46" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="11" y="11" width="26" height="26" rx="6" fill="#ffffff"/></svg></button></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" aria-hidden="true"><div class="overlay-card"><div class="overlay-art" aria-hidden="true"><svg width="72" height="72" viewBox="0 0 72 72" fill="none"><circle cx="36" cy="36" r="33" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.16)" stroke-width="1.5"/><circle cx="36" cy="36" r="14" stroke="#ffd9a0" stroke-width="3"/><path d="M36 14v7M36 51v7M14 36h7M51 36h7M20.4 20.4l5 5M46.6 46.6l5 5M51.6 20.4l-5 5M25.4 46.6l-5 5" stroke="#ffd9a0" stroke-width="3" stroke-linecap="round"/></svg></div><h2 class="overlay-title" id="settingsTitle">Settings</h2><p class="overlay-sub">How long should each color glow before it changes?</p><div class="setting-group" role="radiogroup" aria-label="Color duration in seconds"><button class="seg-btn" role="radio" aria-checked="false" data-seconds="1"><span class="seg-num">1</span><span class="seg-unit">sec</span></button><button class="seg-btn" role="radio" aria-checked="false" data-seconds="2"><span class="seg-num">2</span><span class="seg-unit">sec</span></button><button class="seg-btn" role="radio" aria-checked="false" data-seconds="3"><span class="seg-num">3</span><span class="seg-unit">sec</span></button><button class="seg-btn" role="radio" aria-checked="false" data-seconds="4"><span class="seg-num">4</span><span class="seg-unit">sec</span></button><button class="seg-btn" role="radio" aria-checked="true" data-seconds="5"><span class="seg-num">5</span><span class="seg-unit">sec</span></button></div><div class="setting-hint" id="settingHint">Each color stays on screen for <b>5 seconds</b></div><div class="diag-row"><div class="diag-text"><div class="diag-title">Sound not working?</div><div class="diag-sub" id="diagLine">Tap Test Sound to check the audio engine.</div></div><button class="test-btn" id="testSoundBtn">Test&nbsp;Sound</button></div><div class="overlay-actions"><button class="btn primary" id="settingsDoneBtn">Done</button></div></div></div>
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="overlayTitle" aria-hidden="true"><div class="overlay-card"><div class="overlay-art" aria-hidden="true"><svg width="86" height="86" viewBox="0 0 86 86" fill="none"><circle cx="43" cy="43" r="40" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.16)" stroke-width="1.5"/><path d="M43 16l6.6 13.4 14.8 2.1-10.7 10.4 2.5 14.7L43 52.6 29.8 59.6l2.5-14.7L21.6 34.5l14.8-2.1L43 16z" fill="#FFD76A" stroke="#B8860B" stroke-width="1.6" stroke-linejoin="round"/></svg></div><h2 class="overlay-title" id="overlayTitle">Session complete</h2><p class="overlay-sub" id="overlaySub">Ten peaceful minutes of color and sound. Beautifully done.</p><div class="stats"><div class="stat"><div class="stat-num" id="statTime">10:00</div><div class="stat-label">Time Played</div></div><div class="stat"><div class="stat-num" id="statColors">0</div><div class="stat-label">Colors Shown</div></div><div class="stat"><div class="stat-num" id="statSounds">0</div><div class="stat-label">Sounds Heard</div></div></div><div class="overlay-actions"><button class="btn primary" id="playAgainBtn">Play again</button><button class="btn ghost" id="doneBtn">Done</button></div></div></div>
   <canvas id="confetti" aria-hidden="true"></canvas>
-
 <script>
 'use strict';
-/* ============================================================
-   ColorPlay — a 10-minute color & sound session for iPad
-   · Play → random colors (red/blue/green/purple) every 5 s
-   · Each color has its own synthesized voice (Web Audio API)
-   · Timer counts up to 10:00, then auto-stops
-   · Stop button ends the session early at any time
-   ============================================================ */
-
-const SESSION_MS   = 10 * 60 * 1000;   // 10 minutes
-const HOLD_MS      = 5000;             // 5 seconds per color
-const COLORS       = ['red', 'blue', 'green', 'purple'];
-const COLOR_LABEL  = { red: 'Red', blue: 'Blue', green: 'Green', purple: 'Purple' };
-
-/* ---------- element refs ---------- */
-const $            = (s) => document.querySelector(s);
-const timerText    = $('#timerText');
-const progressFill = $('#progressFill');
-const playBtn      = $('#playBtn');
-const statusText   = $('#statusText');
-const idleHero     = $('#idleHero');
-const colorView    = $('#colorView');
-const colorName    = $('#colorName');
-const colorKicker  = $('#colorKicker');
-const colorNext    = $('#colorNext');
-const countdownFill= $('#countdownFill');
-const soundBtn     = $('#soundBtn');
-const soundOnIcon  = $('#soundOnIcon');
-const soundOffIcon = $('#soundOffIcon');
-const fullscreenBtn= $('#fullscreenBtn');
-const overlay      = $('#overlay');
-const overlayTitle = $('#overlayTitle');
-const overlaySub   = $('#overlaySub');
-const statTime     = $('#statTime');
-const statColors   = $('#statColors');
-const statSounds   = $('#statSounds');
-const playAgainBtn = $('#playAgainBtn');
-const doneBtn      = $('#doneBtn');
-const layers       = {};
-document.querySelectorAll('.layer[data-layer]').forEach(el => { layers[el.dataset.layer] = el; });
-
-/* ---------- state ---------- */
-let state         = 'idle';            // idle | playing | done
-let startEpoch    = 0;
-let nextColorAt   = 0;
-let currentColor  = null;
-let colorsShown   = 0;
-let soundsHeard   = 0;
-let rafId         = null;
-
-const pad = (n) => String(n).padStart(2, '0');
-const fmtTime = (totalSec) => {
-  totalSec = Math.max(0, Math.floor(totalSec));
-  return pad(Math.floor(totalSec / 60)) + ':' + pad(totalSec % 60);
-};
-
-/* ============================================================
-   SOUND ENGINE — every color gets its own synthesized voice
-   ============================================================ */
-const SoundEngine = (() => {
-  let ctx = null;
-  let master = null;
-  let enabled = (localStorage.getItem('colorplay-sound') || 'on') === 'on';
-  const MASTER_LEVEL = 0.5;
-
-  function ensure() {
-    if (!ctx) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) return false;
-      ctx = new AC();
-      const comp = ctx.createDynamicsCompressor();
-      comp.threshold.value = -18;
-      comp.knee.value      = 22;
-      comp.ratio.value     = 8;
-      comp.attack.value    = 0.004;
-      comp.release.value   = 0.24;
-      master = ctx.createGain();
-      master.gain.value = MASTER_LEVEL;
-      master.connect(comp);
-      comp.connect(ctx.destination);
-    }
-    if (ctx.state === 'suspended') ctx.resume();
-    return true;
-  }
-
-  /* envelope helper → returns a gain node wired to master */
-  function adsrGain(t0, peak, attack, decay) {
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.0001, t0);
-    g.gain.linearRampToValueAtTime(peak, t0 + attack);
-    g.gain.exponentialRampToValueAtTime(0.0001, t0 + attack + decay);
-    g.connect(master);
-    return g;
-  }
-
-  /* one voiced partial → oscillator → (optional filter) → envelope → master */
-  function partial({ freq, multiple = 1, type = 'sine', t0, attack = 0.02, decay = 2.4,
-                     peak = 0.4, detune = 0, filterFreq = null, filterQ = 1 }) {
-    const osc = ctx.createOscillator();
-    osc.type = type;
-    osc.frequency.value = freq * multiple;
-    osc.detune.value = detune;
-    const env = adsrGain(t0, peak, attack, decay);
-    if (filterFreq) {
-      const f = ctx.createBiquadFilter();
-      f.type = 'lowpass'; f.frequency.value = filterFreq; f.Q.value = filterQ;
-      osc.connect(f); f.connect(env);
-    } else {
-      osc.connect(env);
-    }
-    osc.start(t0);
-    osc.stop(t0 + attack + decay + 0.15);
-  }
-
-  /* --- Unique voices --- */
-
-  // RED — "Ember Bowl": a deep singing bowl. F3 fundamental, slow bloom, long resonance.
-  function playRed(t0) {
-    const F = 174.61; // F3
-    partial({ freq: F, multiple: 1,    t0, attack: 0.09, decay: 4.6, peak: 0.55 });
-    partial({ freq: F, multiple: 2.01, t0, attack: 0.09, decay: 3.6, peak: 0.22 });
-    partial({ freq: F, multiple: 2.94, t0, attack: 0.10, decay: 2.3, peak: 0.10 });
-    partial({ freq: F, multiple: 4.16, t0, attack: 0.12, decay: 1.3, peak: 0.045 });
-  }
-
-  // GREEN — "Forest Marimba": woody, bright mallet strike on G4.
-  function playGreen(t0) {
-    const G = 392.0; // G4
-    partial({ freq: G, multiple: 1, type: 'triangle', t0, attack: 0.004, decay: 1.7, peak: 0.62, filterFreq: 2600, filterQ: 2 });
-    partial({ freq: G, multiple: 4, type: 'sine',     t0, attack: 0.003, decay: 0.55, peak: 0.20 });
-    partial({ freq: G, multiple: 9, type: 'sine',     t0, attack: 0.002, decay: 0.18, peak: 0.06 });
-    partial({ freq: 1180,        t0, attack: 0.001, decay: 0.07, peak: 0.16 }); // mallet knock
-  }
-
-  // BLUE — "Ocean Chime": a glass crystal chime. D5 with inharmonic glass partials and gentle beating.
-  function playBlue(t0) {
-    const D = 587.33; // D5
-    partial({ freq: D, multiple: 1,    t0, attack: 0.006, decay: 3.4, peak: 0.46, detune: +4 });
-    partial({ freq: D, multiple: 1,    t0, attack: 0.006, decay: 3.4, peak: 0.30, detune: -5 });
-    partial({ freq: D, multiple: 2.76, t0, attack: 0.006, decay: 2.2, peak: 0.17 });
-    partial({ freq: D, multiple: 5.40, t0, attack: 0.006, decay: 1.1, peak: 0.06 });
-  }
-
-  // PURPLE — "Starlight Harp": sparkling two-note arpeggio, A5 → E6.
-  function playPurple(t0) {
-    const A = 880.0, E = 1318.51; // A5, E6
-    partial({ freq: A, multiple: 1, t0,        attack: 0.004, decay: 1.9, peak: 0.42 });
-    partial({ freq: A, multiple: 2, t0,        attack: 0.004, decay: 1.1, peak: 0.12 });
-    partial({ freq: E, multiple: 1, t0: t0+0.17, attack: 0.004, decay: 2.6, peak: 0.44 });
-    partial({ freq: E, multiple: 2, t0: t0+0.17, attack: 0.004, decay: 1.6, peak: 0.14 });
-    partial({ freq: E, multiple: 4, t0: t0+0.17, attack: 0.004, decay: 0.7, peak: 0.05 });
-  }
-
-  // session jingles
-  function playStartJingle() {
-    if (!ensure() || !enabled) return;
-    const t0 = ctx.currentTime + 0.03;
-    [392.0, 523.25].forEach((f, i) =>           // G4 → C5, rising "hello"
-      partial({ freq: f, t0: t0 + i * 0.14, attack: 0.01, decay: 1.4, peak: 0.32, type: 'triangle', filterFreq: 3000 }));
-  }
-  function playStopJingle() {
-    if (!ensure() || !enabled) return;
-    const t0 = ctx.currentTime + 0.03;
-    [523.25, 392.0].forEach((f, i) =>           // C5 → G4, gentle "goodbye"
-      partial({ freq: f, t0: t0 + i * 0.16, attack: 0.01, decay: 1.3, peak: 0.28, type: 'triangle', filterFreq: 3000 }));
-  }
-  function playCompleteChime() {
-    if (!ensure() || !enabled) return;
-    const t0 = ctx.currentTime + 0.05;
-    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>  // C5–E5–G5–C6 fanfare
-      partial({ freq: f, t0: t0 + i * 0.17, attack: 0.008, decay: 2.8, peak: 0.36 }));
-  }
-
-  const colorVoice = { red: playRed, blue: playBlue, green: playGreen, purple: playPurple };
-
-  function playColor(key) {
-    if (!enabled) return;
-    if (!ensure()) return;
-    colorVoice[key](ctx.currentTime + 0.02);
-    soundsHeard += 1;
-  }
-
-  function setEnabled(v) {
-    enabled = v;
-    localStorage.setItem('colorplay-sound', v ? 'on' : 'off');
-    if (v) ensure();
-  }
-
-  return {
-    playColor, playStartJingle, playStopJingle, playCompleteChime, setEnabled,
-    isEnabled: () => enabled,
-    unlock() { ensure(); },
-    suspendIfIdle() { if (ctx && state !== 'playing') ctx.suspend(); }
-  };
-})();
-
-/* ============================================================
-   WAKE LOCK — keep the iPad screen awake during a session
-   ============================================================ */
-let wakeLock = null;
-async function requestWakeLock() {
-  try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); }
-  catch (e) { /* not critical */ }
-}
-function releaseWakeLock() {
-  try { if (wakeLock) wakeLock.release(); } catch (e) { /* ignore */ }
-  wakeLock = null;
-}
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && state === 'playing') requestWakeLock();
-});
-
-/* ============================================================
-   COLOR CYCLING
-   ============================================================ */
-function pickNextColor() {
-  const pool = COLORS.filter(c => c !== currentColor);
-  return pool[Math.floor(Math.random() * pool.length)];
-}
-
-function showColor(key, count) {
-  Object.entries(layers).forEach(([k, el]) => el.classList.toggle('active', k === key));
-  colorName.textContent = COLOR_LABEL[key];
-  colorKicker.textContent = 'Color ' + count;
-  colorName.classList.remove('pop');
-  void colorName.offsetWidth;            // restart pop animation
-  colorName.classList.add('pop');
-}
-
-function advanceColor() {
-  currentColor = pickNextColor();
-  colorsShown += 1;
-  showColor(currentColor, colorsShown);
-  SoundEngine.playColor(currentColor);
-  nextColorAt = Date.now() + HOLD_MS;
-}
-
-/* ============================================================
-   SESSION LIFECYCLE
-   ============================================================ */
-function setIdleUI() {
-  state = 'idle';
-  Object.entries(layers).forEach(([k, el]) => el.classList.toggle('active', k === 'idle'));
-  idleHero.classList.remove('hidden');
-  colorView.classList.add('hidden');
-  timerText.textContent = '00:00';
-  progressFill.style.transform = 'scaleX(0)';
-  countdownFill.style.transform = 'scaleX(1)';
-  colorNext.textContent = 'Next color in 5';
-  statusText.textContent = 'Tap play to begin';
-  statusText.classList.remove('hidden');
-  playBtn.classList.remove('playing');
-  playBtn.setAttribute('aria-label', 'Start session');
-  playBtn.setAttribute('aria-pressed', 'false');
-}
-
-function startSession() {
-  SoundEngine.unlock();
-  SoundEngine.playStartJingle();
-
-  state       = 'playing';
-  startEpoch  = Date.now();
-  colorsShown = 0;
-  soundsHeard = 0;
-  currentColor= null;
-
-  idleHero.classList.add('hidden');
-  colorView.classList.remove('hidden');
-  statusText.classList.add('hidden');
-  playBtn.classList.add('playing');
-  playBtn.setAttribute('aria-label', 'Stop session');
-  playBtn.setAttribute('aria-pressed', 'true');
-
-  requestWakeLock();
-  advanceColor();              // show first color right away
-  cancelAnimationFrame(rafId);
-  rafId = requestAnimationFrame(tick);
-}
-
-function tick() {
-  if (state !== 'playing') return;
-  const now = Date.now();
-  const elapsed = now - startEpoch;
-
-  /* timer + session progress */
-  timerText.textContent = fmtTime(Math.min(elapsed, SESSION_MS) / 1000);
-  progressFill.style.transform = 'scaleX(' + Math.min(1, elapsed / SESSION_MS) + ')';
-
-  /* per-color countdown */
-  const remainMs = Math.max(0, nextColorAt - now);
-  countdownFill.style.transform = 'scaleX(' + (remainMs / HOLD_MS) + ')';
-  colorNext.textContent = remainMs > 1000 ? ('Next color in ' + Math.ceil(remainMs / 1000)) : 'Changing…';
-
-  /* advance color when its 5 s are up */
-  if (now >= nextColorAt) advanceColor();
-
-  /* auto-stop at 10:00 */
-  if (elapsed >= SESSION_MS) { finishSession(true); return; }
-
-  rafId = requestAnimationFrame(tick);
-}
-
-function finishSession(auto) {
-  const elapsed = Math.min(Date.now() - startEpoch, SESSION_MS);
-  cancelAnimationFrame(rafId);
-  state = 'done';
-  releaseWakeLock();
-  timerText.textContent = fmtTime(elapsed / 1000);
-  progressFill.style.transform = 'scaleX(' + (elapsed / SESSION_MS) + ')';
-
-  overlayTitle.textContent = auto ? 'Session complete' : 'Session stopped';
-  overlaySub.textContent   = auto
-    ? 'Ten peaceful minutes of color and sound. Beautifully done.'
-    : 'You ended the session early — every color still counted.';
-  statTime.textContent   = fmtTime(elapsed / 1000);
-  statColors.textContent = String(colorsShown);
-  statSounds.textContent = String(soundsHeard);
-
-  overlay.classList.add('show');
-  overlay.setAttribute('aria-hidden', 'false');
-
-  if (auto) {
-    SoundEngine.playCompleteChime();
-    launchConfetti();
-  } else {
-    SoundEngine.playStopJingle();
-  }
-}
-
-function hideOverlay() {
-  overlay.classList.remove('show');
-  overlay.setAttribute('aria-hidden', 'true');
-}
-
-playBtn.addEventListener('click', () => {
-  if (state === 'playing') finishSession(false);
-  else startSession();               // also resets from the done state
-});
-playAgainBtn.addEventListener('click', () => { hideOverlay(); startSession(); });
-doneBtn.addEventListener('click', () => { hideOverlay(); setIdleUI(); });
-
-/* keyboard shortcut (desktop testing): Space = play/stop, F = fullscreen */
-document.addEventListener('keydown', (e) => {
-  if (e.code === 'Space') { e.preventDefault(); playBtn.click(); }
-  else if (e.key === 'f' || e.key === 'F') { fullscreenBtn.click(); }
-});
-
-/* ============================================================
-   SOUND & FULLSCREEN TOGGLES
-   ============================================================ */
-function renderSoundBtn() {
-  const on = SoundEngine.isEnabled();
-  soundOnIcon.style.display  = on ? 'block' : 'none';
-  soundOffIcon.style.display = on ? 'none' : 'block';
-  soundBtn.setAttribute('aria-pressed', String(on));
-  soundBtn.setAttribute('aria-label', on ? 'Sound on — tap to mute' : 'Sound off — tap to unmute');
-}
-soundBtn.addEventListener('click', () => { SoundEngine.setEnabled(!SoundEngine.isEnabled()); renderSoundBtn(); });
-renderSoundBtn();
-
-if (document.fullscreenEnabled || document.webkitFullscreenEnabled) {
-  fullscreenBtn.addEventListener('click', () => {
-    const doc = document, el = doc.documentElement;
-    if (!doc.fullscreenElement && !doc.webkitFullscreenElement) {
-      (el.requestFullscreen || el.webkitRequestFullscreen).call(el).catch(() => {});
-    } else {
-      (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc).catch(() => {});
-    }
-  });
-} else {
-  fullscreenBtn.style.display = 'none';   // fullscreen unsupported → hide button
-}
-
-/* ============================================================
-   CONFETTI — brand-colored celebration on auto-complete
-   ============================================================ */
-const confettiCanvas = $('#confetti');
-function launchConfetti() {
-  const ctx2d = confettiCanvas.getContext('2d');
-  const dpr = Math.min(2, window.devicePixelRatio || 1);
-  confettiCanvas.width  = window.innerWidth  * dpr;
-  confettiCanvas.height = window.innerHeight * dpr;
-  ctx2d.scale(dpr, dpr);
-
-  const palette = ['#ff6a5f', '#57b6ff', '#4de08a', '#c084fc', '#ffd76a', '#ffffff'];
-  const W = window.innerWidth, H = window.innerHeight;
-  const pieces = Array.from({ length: 110 }, () => ({
-    x: Math.random() * W,
-    y: -30 - Math.random() * H * 0.45,
-    w: 6 + Math.random() * 8,
-    h: 10 + Math.random() * 12,
-    vx: (Math.random() - 0.5) * 1.6,
-    vy: 1.6 + Math.random() * 2.4,
-    rot: Math.random() * Math.PI,
-    vr: (Math.random() - 0.5) * 0.12,
-    color: palette[(Math.random() * palette.length) | 0]
-  }));
-
-  const start = performance.now();
-  function frame(now) {
-    const t = now - start;
-    ctx2d.clearRect(0, 0, W, H);
-    let alive = 0;
-    for (const p of pieces) {
-      p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.vy += 0.015;
-      if (p.y < H + 30) alive++;
-      ctx2d.save();
-      ctx2d.translate(p.x, p.y);
-      ctx2d.rotate(p.rot);
-      ctx2d.globalAlpha = Math.max(0, 1 - t / 4200);
-      ctx2d.fillStyle = p.color;
-      ctx2d.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-      ctx2d.restore();
-    }
-    if (alive > 0 && t < 4500) requestAnimationFrame(frame);
-    else ctx2d.clearRect(0, 0, W, H);
-  }
-  requestAnimationFrame(frame);
-}
-
-/* boot */
-setIdleUI();
+const SESSION_MS=10*60*1000;
+const COLORS=['red','blue','green','purple'];
+const COLOR_LABEL={red:'Red',blue:'Blue',green:'Green',purple:'Purple'};
+const HOLD_MIN=1,HOLD_MAX=5,HOLD_DEFAULT=5;
+const store=(()=>{const memory={};let usable=false;try{const probe='__colorplay_probe__';window.localStorage.setItem(probe,'1');window.localStorage.removeItem(probe);usable=true}catch(e){}return{get(key,fallback){try{if(usable){const v=window.localStorage.getItem(key);return v===null?fallback:v}return Object.prototype.hasOwnProperty.call(memory,key)?memory[key]:fallback}catch(e){return fallback}},set(key,value){memory[key]=value;try{if(usable)window.localStorage.setItem(key,value)}catch(e){}}}})();
+const $=s=>document.querySelector(s);
+const timerText=$('#timerText'),progressFill=$('#progressFill'),playBtn=$('#playBtn'),statusText=$('#statusText'),idleHero=$('#idleHero'),idleHoldText=$('#idleHoldText'),chipHold=$('#chipHold'),colorView=$('#colorView'),colorName=$('#colorName'),colorKicker=$('#colorKicker'),colorNext=$('#colorNext'),countdownFill=$('#countdownFill'),soundBtn=$('#soundBtn'),soundOnIcon=$('#soundOnIcon'),soundOffIcon=$('#soundOffIcon'),fullscreenBtn=$('#fullscreenBtn'),overlay=$('#overlay'),overlayTitle=$('#overlayTitle'),overlaySub=$('#overlaySub'),statTime=$('#statTime'),statColors=$('#statColors'),statSounds=$('#statSounds'),playAgainBtn=$('#playAgainBtn'),doneBtn=$('#doneBtn'),toastEl=$('#toast'),settingsBtn=$('#settingsBtn'),settingsOverlay=$('#settingsOverlay'),settingsDoneBtn=$('#settingsDoneBtn'),settingHint=$('#settingHint'),diagLine=$('#diagLine'),testSoundBtn=$('#testSoundBtn'),segButtons=Array.from(document.querySelectorAll('.seg-btn[data-seconds]'));
+const layers={};document.querySelectorAll('.layer[data-layer]').forEach(el=>{layers[el.dataset.layer]=el});
+let toastTimer=null;function showToast(msg){toastEl.textContent=msg;toastEl.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove('show'),4200)}
+function clampHold(n){n=parseInt(n,10);if(Number.isNaN(n))return HOLD_DEFAULT;return Math.min(HOLD_MAX,Math.max(HOLD_MIN,n))}
+let holdSeconds=clampHold(store.get('colorplay-hold-seconds',String(HOLD_DEFAULT)));const holdMs=()=>holdSeconds*1000;
+let state='idle',startEpoch=0,nextColorAt=0,currentColor=null,colorsShown=0,soundsHeard=0,rafId=null;
+function renderHoldUI(){segButtons.forEach(btn=>btn.setAttribute('aria-checked',String(parseInt(btn.dataset.seconds,10)===holdSeconds)));settingHint.innerHTML='Each color stays on screen for <b>'+holdSeconds+' second'+(holdSeconds===1?'':'s')+'</b>';chipHold.textContent=holdSeconds+'s';idleHoldText.textContent=String(holdSeconds);if(state!=='playing')colorNext.textContent='Next color in '+holdSeconds}
+function setHoldSeconds(n,announce){holdSeconds=clampHold(n);store.set('colorplay-hold-seconds',String(holdSeconds));if(state==='playing')nextColorAt=Date.now()+holdMs();renderHoldUI();if(announce)showToast('Color duration set to '+holdSeconds+' second'+(holdSeconds===1?'':'s'))}
+segButtons.forEach(btn=>btn.addEventListener('click',()=>setHoldSeconds(btn.dataset.seconds,false)));
+function updateDiagnostics(note){const soundState=SoundEngine.isEnabled()?'on':'off';let engine=SoundEngine.getState();if(engine==='not-created')engine='idle (created on first tap)';diagLine.innerHTML='Sound: <b>'+soundState+'</b> · Engine: <b>'+engine+'</b>'+(note?'<br>'+note:'')}
+function openSettings(){updateDiagnostics();settingsOverlay.classList.add('show');settingsOverlay.setAttribute('aria-hidden','false')}
+function closeSettings(){settingsOverlay.classList.remove('show');settingsOverlay.setAttribute('aria-hidden','true')}
+settingsBtn.addEventListener('click',openSettings);settingsDoneBtn.addEventListener('click',closeSettings);settingsOverlay.addEventListener('click',e=>{if(e.target===settingsOverlay)closeSettings()});
+const pad=n=>String(n).padStart(2,'0');function fmtTime(totalSec){totalSec=Math.max(0,Math.floor(totalSec));return pad(Math.floor(totalSec/60))+':'+pad(totalSec%60)}
+const SoundEngine=(()=>{let ctx=null,master=null,enabled=store.get('colorplay-sound','on')==='on',lastError=null;const MASTER_LEVEL=.5;function ensure(){try{if(!ctx){const AC=window.AudioContext||window.webkitAudioContext;if(!AC){lastError=new Error('Web Audio API is not supported in this browser');return false}ctx=new AC();const comp=ctx.createDynamicsCompressor();comp.threshold.value=-18;comp.knee.value=22;comp.ratio.value=8;comp.attack.value=.004;comp.release.value=.24;master=ctx.createGain();master.gain.value=MASTER_LEVEL;master.connect(comp);comp.connect(ctx.destination)}if(ctx.state==='suspended')ctx.resume().catch(()=>{});return true}catch(e){lastError=e;return false}}
+function adsrGain(t0,peak,attack,decay){const g=ctx.createGain();g.gain.setValueAtTime(.0001,t0);g.gain.linearRampToValueAtTime(peak,t0+attack);g.gain.exponentialRampToValueAtTime(.0001,t0+attack+decay);g.connect(master);return g}
+function partial({freq,multiple=1,type='sine',t0,attack=.02,decay=2.4,peak=.4,detune=0,filterFreq=null,filterQ=1}){const osc=ctx.createOscillator();osc.type=type;osc.frequency.value=freq*multiple;osc.detune.value=detune;const env=adsrGain(t0,peak,attack,decay);if(filterFreq){const f=ctx.createBiquadFilter();f.type='lowpass';f.frequency.value=filterFreq;f.Q.value=filterQ;osc.connect(f);f.connect(env)}else osc.connect(env);osc.start(t0);osc.stop(t0+attack+decay+.15)}
+function playRed(t0){const F=174.61;partial({freq:F,multiple:1,t0,attack:.09,decay:4.6,peak:.55});partial({freq:F,multiple:2.01,t0,attack:.09,decay:3.6,peak:.22});partial({freq:F,multiple:2.94,t0,attack:.10,decay:2.3,peak:.10});partial({freq:F,multiple:4.16,t0,attack:.12,decay:1.3,peak:.045})}
+function playGreen(t0){const G=392;partial({freq:G,multiple:1,type:'triangle',t0,attack:.004,decay:1.7,peak:.62,filterFreq:2600,filterQ:2});partial({freq:G,multiple:4,type:'sine',t0,attack:.003,decay:.55,peak:.20});partial({freq:G,multiple:9,type:'sine',t0,attack:.002,decay:.18,peak:.06});partial({freq:1180,t0,attack:.001,decay:.07,peak:.16})}
+function playBlue(t0){const D=587.33;partial({freq:D,multiple:1,t0,attack:.006,decay:3.4,peak:.46,detune:4});partial({freq:D,multiple:1,t0,attack:.006,decay:3.4,peak:.30,detune:-5});partial({freq:D,multiple:2.76,t0,attack:.006,decay:2.2,peak:.17});partial({freq:D,multiple:5.4,t0,attack:.006,decay:1.1,peak:.06})}
+function playPurple(t0){const A=880,E=1318.51;partial({freq:A,multiple:1,t0,attack:.004,decay:1.9,peak:.42});partial({freq:A,multiple:2,t0,attack:.004,decay:1.1,peak:.12});partial({freq:E,multiple:1,t0:t0+.17,attack:.004,decay:2.6,peak:.44});partial({freq:E,multiple:2,t0:t0+.17,attack:.004,decay:1.6,peak:.14});partial({freq:E,multiple:4,t0:t0+.17,attack:.004,decay:.7,peak:.05})}
+function playStartJingle(){if(!enabled||!ensure())return;const t0=ctx.currentTime+.03;[392,523.25].forEach((f,i)=>partial({freq:f,t0:t0+i*.14,attack:.01,decay:1.4,peak:.32,type:'triangle',filterFreq:3000}))}
+function playStopJingle(){if(!enabled||!ensure())return;const t0=ctx.currentTime+.03;[523.25,392].forEach((f,i)=>partial({freq:f,t0:t0+i*.16,attack:.01,decay:1.3,peak:.28,type:'triangle',filterFreq:3000}))}
+function playCompleteChime(){if(!enabled||!ensure())return;const t0=ctx.currentTime+.05;[523.25,659.25,783.99,1046.5].forEach((f,i)=>partial({freq:f,t0:t0+i*.17,attack:.008,decay:2.8,peak:.36}))}
+function playTest(){if(!ensure())return false;const t0=ctx.currentTime+.03;partial({freq:659.25,t0,attack:.006,decay:1.1,peak:.4});partial({freq:987.77,t0:t0+.12,attack:.006,decay:1.5,peak:.4});return true}
+const colorVoice={red:playRed,blue:playBlue,green:playGreen,purple:playPurple};function playColor(key){if(!enabled||!ensure())return;const voice=colorVoice[key];if(voice){voice(ctx.currentTime+.02);soundsHeard++}}
+function setEnabled(v){enabled=v;store.set('colorplay-sound',v?'on':'off');if(v)ensure()}
+return{playColor,playStartJingle,playStopJingle,playCompleteChime,playTest,setEnabled,isEnabled:()=>enabled,getState:()=>ctx?ctx.state:'not-created',unlock(){ensure()},getLastError:()=>lastError}})();
+testSoundBtn.addEventListener('click',()=>{if(!SoundEngine.isEnabled()){updateDiagnostics('Sound is muted. Tap the speaker icon at the top to unmute, then test again.');return}const ok=SoundEngine.playTest();const stamp=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});if(ok)updateDiagnostics('Test chime fired at '+stamp+'. If you heard nothing, the app is fine — check iPad output (volume, Bluetooth route, headphones).');else{const err=SoundEngine.getLastError();updateDiagnostics('Engine failed: '+(err&&err.message?err.message:'unknown error')+'. Try closing and reopening the app.')}});
+['pointerdown','touchstart'].forEach(evt=>window.addEventListener(evt,()=>SoundEngine.unlock(),{once:true,passive:true}));
+let wakeLock=null;async function requestWakeLock(){try{if('wakeLock'in navigator)wakeLock=await navigator.wakeLock.request('screen')}catch(e){}}function releaseWakeLock(){try{if(wakeLock)wakeLock.release()}catch(e){}wakeLock=null}document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&state==='playing')requestWakeLock()});
+function pickNextColor(){const pool=COLORS.filter(c=>c!==currentColor);return pool[Math.floor(Math.random()*pool.length)]}
+function showColor(key,count){Object.entries(layers).forEach(([k,el])=>el.classList.toggle('active',k===key));colorName.textContent=COLOR_LABEL[key];colorKicker.textContent='Color '+count;colorName.classList.remove('pop');void colorName.offsetWidth;colorName.classList.add('pop')}
+function advanceColor(){currentColor=pickNextColor();colorsShown++;showColor(currentColor,colorsShown);SoundEngine.playColor(currentColor);nextColorAt=Date.now()+holdMs()}
+function setIdleUI(){state='idle';Object.entries(layers).forEach(([k,el])=>el.classList.toggle('active',k==='idle'));idleHero.classList.remove('hidden');colorView.classList.add('hidden');timerText.textContent='00:00';progressFill.style.transform='scaleX(0)';countdownFill.style.transform='scaleX(1)';colorNext.textContent='Next color in '+holdSeconds;statusText.textContent='Tap play to begin';statusText.classList.remove('hidden');playBtn.classList.remove('playing');playBtn.setAttribute('aria-label','Start session');playBtn.setAttribute('aria-pressed','false')}
+function startSession(){SoundEngine.unlock();SoundEngine.playStartJingle();state='playing';startEpoch=Date.now();colorsShown=0;soundsHeard=0;currentColor=null;idleHero.classList.add('hidden');colorView.classList.remove('hidden');statusText.classList.add('hidden');playBtn.classList.add('playing');playBtn.setAttribute('aria-label','Stop session');playBtn.setAttribute('aria-pressed','true');requestWakeLock();advanceColor();cancelAnimationFrame(rafId);rafId=requestAnimationFrame(tick)}
+function tick(){if(state!=='playing')return;const now=Date.now(),elapsed=now-startEpoch,hold=holdMs();timerText.textContent=fmtTime(Math.min(elapsed,SESSION_MS)/1000);progressFill.style.transform='scaleX('+Math.min(1,elapsed/SESSION_MS)+')';const remainMs=Math.max(0,nextColorAt-now);countdownFill.style.transform='scaleX('+(hold>0?remainMs/hold:0)+')';colorNext.textContent=remainMs>1000?'Next color in '+Math.ceil(remainMs/1000):'Changing…';if(now>=nextColorAt)advanceColor();if(elapsed>=SESSION_MS){finishSession(true);return}rafId=requestAnimationFrame(tick)}
+function finishSession(auto){const elapsed=Math.min(Date.now()-startEpoch,SESSION_MS);cancelAnimationFrame(rafId);state='done';releaseWakeLock();timerText.textContent=fmtTime(elapsed/1000);progressFill.style.transform='scaleX('+(elapsed/SESSION_MS)+')';overlayTitle.textContent=auto?'Session complete':'Session stopped';overlaySub.textContent=auto?'Ten peaceful minutes of color and sound. Beautifully done.':'You ended the session early — every color still counted.';statTime.textContent=fmtTime(elapsed/1000);statColors.textContent=String(colorsShown);statSounds.textContent=String(soundsHeard);overlay.classList.add('show');overlay.setAttribute('aria-hidden','false');if(auto){SoundEngine.playCompleteChime();launchConfetti()}else SoundEngine.playStopJingle()}
+function hideOverlay(){overlay.classList.remove('show');overlay.setAttribute('aria-hidden','true')}
+playBtn.addEventListener('click',()=>{if(state==='playing')finishSession(false);else startSession()});playAgainBtn.addEventListener('click',()=>{hideOverlay();startSession()});doneBtn.addEventListener('click',()=>{hideOverlay();setIdleUI()});
+document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();playBtn.click()}else if(e.key==='f'||e.key==='F')fullscreenBtn.click();else if(e.key==='s'||e.key==='S')openSettings();else if(e.key==='Escape')closeSettings()});
+function renderSoundBtn(audioFailed){const on=SoundEngine.isEnabled();soundOnIcon.style.display=on?'block':'none';soundOffIcon.style.display=on?'none':'block';soundBtn.setAttribute('aria-pressed',String(on));soundBtn.setAttribute('aria-label',on?'Sound on — tap to mute':'Sound off — tap to unmute');soundBtn.classList.toggle('audio-error',!!audioFailed)}
+soundBtn.addEventListener('click',()=>{const turningOn=!SoundEngine.isEnabled();SoundEngine.setEnabled(turningOn);if(turningOn){const ok=SoundEngine.playTest();if(!ok){const err=SoundEngine.getLastError();showToast('Sound could not start'+(err&&err.message?': '+err.message:'')+'. Check that the iPad is not silenced and the volume is up.');renderSoundBtn(true);return}showToast('Sound on — listen for the chime');renderSoundBtn(false)}else{showToast('Sound off');renderSoundBtn(false)}});renderSoundBtn(false);
+if(document.fullscreenEnabled||document.webkitFullscreenEnabled){fullscreenBtn.addEventListener('click',()=>{const doc=document,el=doc.documentElement;if(!doc.fullscreenElement&&!doc.webkitFullscreenElement){const req=el.requestFullscreen||el.webkitRequestFullscreen;if(req)req.call(el).catch(()=>{})}else{const exit=doc.exitFullscreen||doc.webkitExitFullscreen;if(exit)exit.call(doc).catch(()=>{})}})}else fullscreenBtn.style.display='none';
+const confettiCanvas=$('#confetti');function launchConfetti(){const ctx2d=confettiCanvas.getContext('2d'),dpr=Math.min(2,window.devicePixelRatio||1);confettiCanvas.width=window.innerWidth*dpr;confettiCanvas.height=window.innerHeight*dpr;ctx2d.scale(dpr,dpr);const palette=['#ff6a5f','#57b6ff','#4de08a','#c084fc','#ffd76a','#ffffff'],W=window.innerWidth,H=window.innerHeight,pieces=Array.from({length:110},()=>({x:Math.random()*W,y:-30-Math.random()*H*.45,w:6+Math.random()*8,h:10+Math.random()*12,vx:(Math.random()-.5)*1.6,vy:1.6+Math.random()*2.4,rot:Math.random()*Math.PI,vr:(Math.random()-.5)*.12,color:palette[(Math.random()*palette.length)|0]})),start=performance.now();function frame(now){const t=now-start;ctx2d.clearRect(0,0,W,H);let alive=0;for(const p of pieces){p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;p.vy+=.015;if(p.y<H+30)alive++;ctx2d.save();ctx2d.translate(p.x,p.y);ctx2d.rotate(p.rot);ctx2d.globalAlpha=Math.max(0,1-t/4200);ctx2d.fillStyle=p.color;ctx2d.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx2d.restore()}if(alive>0&&t<4500)requestAnimationFrame(frame);else ctx2d.clearRect(0,0,W,H)}requestAnimationFrame(frame)}
+renderHoldUI();setIdleUI();
 </script>
 </body>
 </html>
