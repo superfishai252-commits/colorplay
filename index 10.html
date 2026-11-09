@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ColorPlay — A 10-Minute Color &amp; Sound Session</title>
+<meta name="description" content="ColorPlay gently fills your iPad with red, blue, green and purple — each color glowing with its own unique sound, adjustable from 1 to 5 seconds — while a timer tracks a calm 10-minute session.">
+<meta name="theme-color" content="#0d1420">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ColorPlay">
+<meta name="format-detection" content="telephone=no">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+  :root{
+    --ink: #f2f6fc;
+    --ink-dim: rgba(242,246,252,.62);
+    --pill: rgba(10,16,26,.42);
+    --pill-border: rgba(255,255,255,.14);
+    --red:    #ff6a5f;
+    --blue:   #57b6ff;
+    --green:  #4de08a;
+    --purple: #c084fc;
+    --safe-top:    env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left:   env(safe-area-inset-left, 0px);
+    --safe-right:  env(safe-area-inset-right, 0px);
+  }
+  *{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body{ height:100%; overflow:hidden; }
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:#0d1420;
+    color:var(--ink);
+    position:fixed; inset:0;
+    user-select:none; -webkit-user-select:none;
+    touch-action:manipulation;
+    overscroll-behavior:none;
+  }
+
+  /* ============ STAGE (color layers) ============ */
+  .stage{ position:fixed; inset:0; z-index:0; }
+  .layer{
+    position:absolute; inset:-2%;
+    opacity:0;
+    transition:opacity 1.15s cubic-bezier(.4,0,.2,1);
+    will-change:opacity;
+  }
+  .layer.active{ opacity:1; }
+  .layer.idle{
+    background:
+      radial-gradient(120% 90% at 50% -10%, #1d2a3c 0%, rgba(29,42,60,0) 60%),
+      radial-gradient(90% 70% at 50% 115%, #18202f 0%, rgba(24,32,47,0) 55%),
+      linear-gradient(180deg,#141d2b 0%,#0d1420 100%);
+  }
+  .layer.red{
+    background:
+      radial-gradient(130% 100% at 50% -20%, #ff8f84 0%, rgba(255,143,132,0) 55%),
+      radial-gradient(90% 80% at 50% 120%, #b3251b 0%, rgba(179,37,27,0) 60%),
+      linear-gradient(165deg,#ff6a5f 0%,#e0442f 58%,#c03324 100%);
+  }
+  .layer.blue{
+    background:
+      radial-gradient(130% 100% at 50% -20%, #8ed2ff 0%, rgba(142,210,255,0) 55%),
+      radial-gradient(90% 80% at 50% 120%, #173e8f 0%, rgba(23,62,143,0) 60%),
+      linear-gradient(165deg,#57b6ff 0%,#2f7bf0 58%,#2057c9 100%);
+  }
+  .layer.green{
+    background:
+      radial-gradient(130% 100% at 50% -20%, #96f7b8 0%, rgba(150,247,184,0) 55%),
+      radial-gradient(90% 80% at 50% 120%, #106b3a 0%, rgba(16,107,58,0) 60%),
+      linear-gradient(165deg,#4de08a 0%,#22b863 58%,#128a48 100%);
+  }
+  .layer.purple{
+    background:
+      radial-gradient(130% 100% at 50% -20%, #ddb0ff 0%, rgba(221,176,255,0) 55%),
+      radial-gradient(90% 80% at 50% 120%, #4c1d95 0%, rgba(76,29,149,0) 60%),
+      linear-gradient(165deg,#c084fc 0%,#8b3fe0 58%,#6d28c9 100%);
+  }
+
+  /* soft drifting light orbs for depth */
+  .orb{
+    position:absolute; border-radius:50%;
+    filter:blur(70px); opacity:.35; pointer-events:none;
+    animation:drift 16s ease-in-out infinite alternate;
+  }
+  .orb.o1{ width:38vmin; height:38vmin; background:rgba(255,255,255,.55); top:12%; left:8%; }
+  .orb.o2{ width:30vmin; height:30vmin; background:rgba(255,255,255,.4); bottom:16%; right:10%; animation-delay:-6s; animation-duration:20s; }
+  .orb.o3{ width:22vmin; height:22vmin; background:rgba(255,255,255,.35); top:38%; left:62%; animation-delay:-11s; animation-duration:23s; }
+  @keyframes drift{
+    0%  { transform:translate(0,0) scale(1); }
+    50% { transform:translate(4vmin,-5vmin) scale(1.12); }
+    100%{ transform:translate(-4vmin,4vmin) scale(.94); }
+  }
+
+  /* ============ TOP BAR ============ */
+  .topbar{
+    position:fixed; z-index:5; left:0; right:0; top:0;
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:calc(var(--safe-top) + 14px) calc(var(--safe-right) + 18px) 12px calc(var(--safe-left) + 18px);
+  }
+  .pill{
+    background:var(--pill);
+    border:1px solid var(--pill-border);
+    border-radius:22px;
+    backdrop-filter:blur(18px) saturate(1.3);
+    -webkit-backdrop-filter:blur(18px) saturate(1.3);
+    box-shadow:0 8px 32px rgba(0,0,0,.28);
+  }
+  .brand{
+    display:flex; align-items:center; gap:11px;
+    padding:9px 18px 9px 10px;
+  }
+  .brand img{ width:38px; height:38px; border-radius:11px; display:block; }
+  .brand-name{ font-size:17px; font-weight:800; letter-spacing:.01em; }
+  .brand-tag{ display:block; font-size:10px; font-weight:600; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-dim); }
+
+  .timer-pill{ padding:10px 22px 12px; min-width:min(46vw, 340px); }
+  .timer-row{ display:flex; align-items:center; gap:14px; }
+  .timer-icon{ flex:0 0 auto; opacity:.85; }
+  .timer{
+    font-size:clamp(30px, 4.6vw, 42px);
+    font-weight:800; line-height:1;
+    font-variant-numeric:tabular-nums;
+    letter-spacing:.02em;
+  }
+  .timer-sub{ font-size:11px; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--ink-dim); margin-top:4px; }
+  .progress-track{
+    margin-top:9px; height:5px; width:100%;
+    background:rgba(255,255,255,.16); border-radius:99px; overflow:hidden;
+  }
+  .progress-fill{
+    height:100%; width:100%;
+    background:linear-gradient(90deg,#ffffff,#ffd9a0);
+    border-radius:99px;
+    transform-origin:0 50%; transform:scaleX(0);
+    transition:transform .25s linear;
+  }
+
+  .icon-cluster{ display:flex; gap:10px; }
+  .icon-btn{
+    width:52px; height:52px; border-radius:18px;
+    border:1px solid var(--pill-border);
+    background:var(--pill);
+    backdrop-filter:blur(18px) saturate(1.3);
+    -webkit-backdrop-filter:blur(18px) saturate(1.3);
+    box-shadow:0 8px 32px rgba(0,0,0,.28);
+    color:var(--ink); cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    transition:transform .15s ease, background .2s ease;
+  }
+  .icon-btn:active{ transform:scale(.92); }
+  .icon-btn:focus-visible{ outline:3px solid rgba(255,255,255,.7); outline-offset:2px; }
+  .icon-btn.audio-error{ border-color:rgba(255,107,95,.65); color:#ffb3ac; }
+
+  /* ============ CENTER STAGE CONTENT ============ */
+  .center{
+    position:fixed; z-index:4; inset:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:0 24px 150px;
+    pointer-events:none;
+  }
+
+  .idle-hero{ display:flex; flex-direction:column; align-items:center; gap:clamp(10px,2vh,22px); transition:opacity .5s ease, transform .5s ease; }
+  .idle-hero.hidden{ opacity:0; transform:scale(.92); pointer-events:none; }
+  .hero-icon{
+    width:clamp(110px, 17vmin, 168px); height:auto; border-radius:26%;
+    box-shadow:0 24px 70px rgba(0,0,0,.5), 0 0 0 1px rgba(255,255,255,.12) inset;
+    animation:heroFloat 5.5s ease-in-out infinite;
+  }
+  @keyframes heroFloat{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-12px); } }
+  .idle-title{ font-size:clamp(34px,5.4vw,58px); font-weight:800; letter-spacing:-.02em; }
+  .idle-sub{ max-width:520px; font-size:clamp(14px,1.6vw,17px); line-height:1.55; color:var(--ink-dim); font-weight:500; }
+  .idle-chips{ display:flex; gap:8px; margin-top:2px; flex-wrap:wrap; justify-content:center; }
+  .chip{
+    font-size:11px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+    padding:7px 14px; border-radius:99px;
+    background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.12); color:var(--ink-dim);
+  }
+  .chip b{ color:var(--ink); font-weight:800; }
+
+  .color-view{ display:flex; flex-direction:column; align-items:center; gap:clamp(14px,2.4vh,26px); transition:opacity .45s ease; }
+  .color-view.hidden{ opacity:0; }
+  .color-kicker{ font-size:12px; font-weight:700; letter-spacing:.34em; text-transform:uppercase; color:rgba(255,255,255,.75); }
+  .color-name{
+    font-size:clamp(72px, 14.5vmin, 150px);
+    font-weight:800; letter-spacing:-.03em; line-height:.95;
+    color:#fff; text-shadow:0 4px 60px rgba(0,0,0,.35);
+  }
+  .color-name.pop{ animation:namePop .8s cubic-bezier(.2,1.4,.35,1); }
+  @keyframes namePop{
+    0%{ transform:scale(.72); opacity:0; filter:blur(6px); }
+    100%{ transform:scale(1); opacity:1; filter:blur(0); }
+  }
+  .countdown-track{
+    width:min(46vw, 300px); height:7px; border-radius:99px;
+    background:rgba(255,255,255,.25); overflow:hidden;
+  }
+  .countdown-fill{
+    height:100%; width:100%; background:#fff; border-radius:99px;
+    transform-origin:0 50%; transform:scaleX(1);
+    box-shadow:0 0 12px rgba(255,255,255,.6);
+  }
+  .color-next{ font-size:13px; font-weight:600; letter-spacing:.18em; text-transform:uppercase; color:rgba(255,255,255,.8); font-variant-numeric:tabular-nums; }
+
+  /* ============ CONTROLS ============ */
+  .controls{
+    position:fixed; z-index:5; left:0; right:0; bottom:0;
+    display:flex; flex-direction:column; align-items:center; gap:16px;
+    padding:0 24px calc(var(--safe-bottom) + 30px);
+  }
+  .status{
+    font-size:12px; font-weight:700; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--ink-dim);
+    background:var(--pill); border:1px solid var(--pill-border);
+    padding:9px 20px; border-radius:99px;
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    transition:opacity .3s ease;
+  }
+  .status.hidden{ opacity:0; }
+
+  .play-btn{
+    width:clamp(104px, 15vmin, 138px); height:clamp(104px, 15vmin, 138px);
+    border-radius:50%; border:none; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    background:linear-gradient(180deg,#ffffff 0%,#dfe7f2 100%);
+    box-shadow:0 20px 54px rgba(0,0,0,.45), 0 0 0 1px rgba(255,255,255,.6) inset, 0 6px 18px rgba(0,0,0,.25);
+    transition:transform .18s cubic-bezier(.34,1.56,.64,1), box-shadow .3s ease, background .3s ease;
+    animation:playPulse 2.6s ease-in-out infinite;
+  }
+  @keyframes playPulse{
+    0%,100%{ box-shadow:0 20px 54px rgba(0,0,0,.45), 0 0 0 0 rgba(255,255,255,.35); }
+    50%    { box-shadow:0 20px 54px rgba(0,0,0,.45), 0 0 0 22px rgba(255,255,255,0); }
+  }
+  .play-btn:hover{ transform:scale(1.05); }
+  .play-btn:active{ transform:scale(.93); }
+  .play-btn:focus-visible{ outline:4px solid rgba(255,255,255,.75); outline-offset:4px; }
+  .play-btn.playing{
+    background:rgba(255,255,255,.16);
+    border:1.5px solid rgba(255,255,255,.4);
+    backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    animation:none;
+    box-shadow:0 16px 44px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.12) inset;
+  }
+  .play-btn svg{ display:block; }
+  .play-btn .icon-stop{ display:none; }
+  .play-btn.playing .icon-stop{ display:block; }
+  .play-btn.playing .icon-play{ display:none; }
+
+  /* ============ TOAST ============ */
+  .toast{
+    position:fixed; z-index:40; left:50%; bottom:calc(var(--safe-bottom) + 176px);
+    transform:translate(-50%, 16px);
+    max-width:min(90vw, 420px);
+    background:rgba(16,23,36,.92);
+    border:1px solid rgba(255,255,255,.18);
+    color:var(--ink);
+    font-size:13px; font-weight:600; line-height:1.45; text-align:center;
+    padding:12px 18px; border-radius:16px;
+    box-shadow:0 16px 44px rgba(0,0,0,.45);
+    opacity:0; pointer-events:none;
+    transition:opacity .3s ease, transform .3s ease;
+  }
+  .toast.show{ opacity:1; transform:translate(-50%, 0); }
+
+  /* ============ OVERLAYS (settings + session end) ============ */
+  .overlay{
+    position:fixed; inset:0; z-index:20;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(6,10,18,.62);
+    backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);
+    opacity:0; pointer-events:none;
+    transition:opacity .45s ease;
+    padding:24px;
+  }
+  .overlay.show{ opacity:1; pointer-events:auto; }
+  .overlay-card{
+    width:min(92vw, 470px);
+    background:linear-gradient(180deg,#1b2534 0%,#131b28 100%);
+    border:1px solid rgba(255,255,255,.12);
+    border-radius:30px;
+    padding:clamp(26px,4vh,40px) clamp(22px,4vw,38px);
+    text-align:center;
+    box-shadow:0 40px 90px rgba(0,0,0,.55);
+    transform:translateY(26px) scale(.96);
+    transition:transform .5s cubic-bezier(.2,1.2,.35,1);
+  }
+  .overlay.show .overlay-card{ transform:translateY(0) scale(1); }
+  .overlay-art{ display:flex; justify-content:center; margin-bottom:14px; }
+  .overlay-title{ font-size:clamp(28px,4vw,36px); font-weight:800; letter-spacing:-.02em; }
+  .overlay-sub{ margin-top:8px; font-size:15px; color:var(--ink-dim); line-height:1.5; }
+  .stats{
+    display:flex; gap:12px; margin:22px 0 24px;
+  }
+  .stat{
+    flex:1; background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09);
+    border-radius:20px; padding:16px 10px;
+  }
+  .stat-num{ font-size:clamp(24px,3.4vw,32px); font-weight:800; font-variant-numeric:tabular-nums; letter-spacing:-.01em; }
+  .stat-label{ margin-top:5px; font-size:10px; font-weight:700; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-dim); }
+  .overlay-actions{ display:flex; gap:12px; }
+  .btn{
+    flex:1; border:none; cursor:pointer; border-radius:17px;
+    padding:17px 12px; font-size:16px; font-weight:800; letter-spacing:.01em;
+    font-family:inherit; transition:transform .15s ease, filter .2s ease;
+  }
+  .btn:active{ transform:scale(.96); }
+  .btn.primary{ background:linear-gradient(180deg,#ffffff,#dfe7f2); color:#101826; box-shadow:0 10px 30px rgba(0,0,0,.35); }
+  .btn.primary:hover{ filter:brightness(1.06); }
+  .btn.ghost{ background:rgba(255,255,255,.08); color:var(--ink); border:1px solid rgba(255,255,255,.12); }
+  .btn:focus-visible{ outline:3px solid rgba(255,255,255,.7); outline-offset:2px; }
+
+  /* ============ SETTINGS ============ */
+  .setting-group{
+    display:flex; gap:10px; margin:20px 0 8px;
+  }
+  .seg-btn{
+    flex:1; cursor:pointer; font-family:inherit;
+    padding:16px 0 14px; border-radius:18px;
+    border:1px solid rgba(255,255,255,.13);
+    background:rgba(255,255,255,.06);
+    color:var(--ink-dim);
+    display:flex; flex-direction:column; align-items:center; gap:2px;
+    transition:transform .15s ease, background .2s ease, color .2s ease;
+  }
+  .seg-btn:active{ transform:scale(.94); }
+  .seg-btn:focus-visible{ outline:3px solid rgba(255,255,255,.7); outline-offset:2px; }
+  .seg-num{ font-size:26px; font-weight:800; line-height:1; font-variant-numeric:tabular-nums; }
+  .seg-unit{ font-size:10px; font-weight:700; letter-spacing:.18em; text-transform:uppercase; opacity:.75; }
+  .seg-btn[aria-checked="true"]{
+    background:linear-gradient(180deg,#ffffff 0%,#dfe7f2 100%);
+    color:#101826; border-color:transparent;
+    box-shadow:0 12px 30px rgba(0,0,0,.4), 0 0 0 1px rgba(255,255,255,.55) inset;
+  }
+  .setting-hint{ font-size:13px; color:var(--ink-dim); min-height:1.4em; margin-bottom:16px; font-variant-numeric:tabular-nums; }
+  .setting-hint b{ color:var(--ink); }
+  .volume-block{ text-align:left; margin:0 2px 16px; }
+  .volume-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; }
+  .volume-label{ font-size:13px; font-weight:800; }
+  .volume-value{ font-size:13px; font-weight:800; color:var(--ink-dim); font-variant-numeric:tabular-nums; }
+  .volume-wrap{ display:flex; align-items:center; gap:12px; }
+  .volume{ -webkit-appearance:none; appearance:none; flex:1; height:34px; background:transparent; cursor:pointer; }
+  .volume::-webkit-slider-runnable-track{ height:8px; border-radius:99px; background:rgba(255,255,255,.16); }
+  .volume::-webkit-slider-thumb{ -webkit-appearance:none; appearance:none; width:28px; height:28px; border-radius:50%; background:#fff; border:none; margin-top:-10px; box-shadow:0 2px 10px rgba(0,0,0,.45), 0 0 0 1px rgba(0,0,0,.06); }
+  .volume::-moz-range-track{ height:8px; border-radius:99px; background:rgba(255,255,255,.16); }
+  .volume::-moz-range-thumb{ width:28px; height:28px; border-radius:50%; background:#fff; border:none; box-shadow:0 2px 10px rgba(0,0,0,.45); }
+  .volume:focus-visible{ outline:3px solid rgba(255,255,255,.7); outline-offset:4px; border-radius:99px; }
+
+  .diag-row{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.09);
+    border-radius:18px; padding:12px 14px; margin-bottom:18px; text-align:left;
+  }
+  .diag-title{ font-size:13px; font-weight:800; letter-spacing:.01em; }
+  .diag-sub{ font-size:11.5px; color:var(--ink-dim); margin-top:4px; line-height:1.45; font-variant-numeric:tabular-nums; }
+  .test-btn{
+    flex:0 0 auto; cursor:pointer; font-family:inherit;
+    background:rgba(255,255,255,.1); color:var(--ink);
+    border:1px solid rgba(255,255,255,.18); border-radius:14px;
+    padding:12px 16px; font-size:13px; font-weight:800; letter-spacing:.02em;
+    transition:transform .15s ease, background .2s ease;
+  }
+  .test-btn:hover{ background:rgba(255,255,255,.16); }
+  .test-btn:active{ transform:scale(.95); }
+  .test-btn:focus-visible{ outline:3px solid rgba(255,255,255,.7); outline-offset:2px; }
+
+  #confetti{ position:fixed; inset:0; z-index:30; pointer-events:none; }
+
+  /* ============ LAYOUT: PORTRAIT ============ */
+  @media (orientation:portrait){
+    .timer-pill{ min-width:0; padding:8px 18px 10px; }
+    .brand-tag{ display:none; }
+    .brand-name{ font-size:15px; }
+    .brand img{ width:32px; height:32px; }
+    .topbar{ gap:8px; padding-left:calc(var(--safe-left) + 10px); padding-right:calc(var(--safe-right) + 10px); }
+    .icon-btn{ width:46px; height:46px; border-radius:15px; }
+    .timer{ font-size:clamp(24px,6.4vw,34px); }
+    .timer-sub{ display:none; }
+    .timer-icon{ display:none; }
+    .idle-sub{ font-size:15px; padding:0 8px; }
+    .setting-group{ gap:7px; }
+    .seg-btn{ padding:13px 0 11px; border-radius:15px; }
+    .seg-num{ font-size:21px; }
+  }
+  @media (max-width:560px){
+    .brand{ display:none; }
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .orb, .hero-icon, .play-btn{ animation:none !important; }
+    .layer{ transition:opacity .3s linear; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- Ambient color stage -->
+  <div class="stage" aria-hidden="true">
+    <div class="layer idle active" data-layer="idle"></div>
+    <div class="layer red"    data-layer="red"></div>
+    <div class="layer blue"   data-layer="blue"></div>
+    <div class="layer green"  data-layer="green"></div>
+    <div class="layer purple" data-layer="purple"></div>
+    <div class="orb o1"></div>
+    <div class="orb o2"></div>
+    <div class="orb o3"></div>
+  </div>
+
+  <!-- Top bar -->
+  <header class="topbar">
+    <div class="brand pill">
+      <img src="icon-192.png" alt="ColorPlay app icon" onerror="this.style.display='none'">
+      <div><span class="brand-name">ColorPlay</span><span class="brand-tag">Calm Color Session</span></div>
+    </div>
+
+    <div class="timer-pill pill" role="timer" aria-label="Elapsed time" aria-live="off">
+      <div class="timer-row">
+        <svg class="timer-icon" width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="13" r="8" stroke="currentColor" stroke-width="1.6" opacity=".9"/>
+          <path d="M12 9.2V13l2.4 1.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M9.5 2.5h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <div class="timer" id="timerText">00:00</div>
+          <div class="timer-sub">of 10:00 session</div>
+        </div>
+      </div>
+      <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progressFill"></div></div>
+    </div>
+
+    <div class="icon-cluster">
+      <button class="icon-btn" id="soundBtn" aria-label="Toggle sound" aria-pressed="true" title="Sound on/off">
+        <svg id="soundOnIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 9.5v5h3.4L12 18.6V5.4L7.4 9.5H4z" fill="currentColor"/>
+          <path d="M15.5 9.2a4 4 0 010 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          <path d="M18.2 6.6a7.6 7.6 0 010 10.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+        <svg id="soundOffIcon" width="24" height="24" viewBox="0 0 24 24" fill="none" style="display:none" aria-hidden="true">
+          <path d="M4 9.5v5h3.4L12 18.6V5.4L7.4 9.5H4z" fill="currentColor"/>
+          <path d="M16 9.5l5 5m0-5l-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="settingsBtn" aria-label="Settings" title="Settings">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z" stroke="currentColor" stroke-width="1.7"/>
+          <path d="M19.4 13.5a7.6 7.6 0 000-3l2-1.5-2-3.4-2.3 1a7.7 7.7 0 00-2.6-1.5L14 2.5h-4l-.5 2.6a7.7 7.7 0 00-2.6 1.5l-2.3-1-2 3.4 2 1.5a7.6 7.6 0 000 3l-2 1.5 2 3.4 2.3-1a7.7 7.7 0 002.6 1.5l.5 2.6h4l.5-2.6a7.7 7.7 0 002.6-1.5l2.3 1 2-3.4-2-1.5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" opacity=".9"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="fullscreenBtn" aria-label="Toggle fullscreen" title="Fullscreen">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Center content -->
+  <main class="center">
+    <!-- Idle state -->
+    <section class="idle-hero" id="idleHero">
+      <img class="hero-icon" src="icon-512.png" alt="ColorPlay — four glowing color quadrants" onerror="this.style.display='none'">
+      <h1 class="idle-title">Ready for colors?</h1>
+      <p class="idle-sub">ColorPlay fills your iPad with red, blue, green and purple — each color glowing for <span id="idleHoldText">5</span> seconds, each with its own musical voice — while the timer tracks a calming ten-minute session.</p>
+      <div class="idle-chips">
+        <span class="chip"><b>4</b> Colors</span>
+        <span class="chip"><b id="chipHold">5s</b> Each</span>
+        <span class="chip"><b>4</b> Unique Sounds</span>
+        <span class="chip"><b>10:00</b> Auto-stop</span>
+      </div>
+    </section>
+
+    <!-- Playing state -->
+    <section class="color-view hidden" id="colorView" aria-live="polite">
+      <div class="color-kicker" id="colorKicker">Color 1</div>
+      <div class="color-name" id="colorName">Red</div>
+      <div class="countdown-track" aria-hidden="true"><div class="countdown-fill" id="countdownFill"></div></div>
+      <div class="color-next" id="colorNext">Next color in 5</div>
+    </section>
+  </main>
+
+  <!-- Bottom controls -->
+  <div class="controls">
+    <div class="status" id="statusText">Tap play to begin</div>
+    <button class="play-btn" id="playBtn" aria-label="Start session" aria-pressed="false">
+      <svg class="icon-play" width="52" height="52" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <path d="M17.5 12.8c0-2.4 2.6-3.9 4.7-2.7l20.4 11.9c2 1.2 2 4.1 0 5.3L22.2 39.9c-2.1 1.2-4.7-.3-4.7-2.7V12.8z" fill="#101826"/>
+      </svg>
+      <svg class="icon-stop" width="46" height="46" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+        <rect x="11" y="11" width="26" height="26" rx="6" fill="#ffffff"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- Settings overlay -->
+  <div class="overlay" id="settingsOverlay" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" aria-hidden="true">
+    <div class="overlay-card">
+      <div class="overlay-art" aria-hidden="true">
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+          <circle cx="36" cy="36" r="33" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.16)" stroke-width="1.5"/>
+          <circle cx="36" cy="36" r="14" stroke="#ffd9a0" stroke-width="3"/>
+          <path d="M36 14v7M36 51v7M14 36h7M51 36h7M20.4 20.4l5 5M46.6 46.6l5 5M51.6 20.4l-5 5M25.4 46.6l-5 5" stroke="#ffd9a0" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h2 class="overlay-title" id="settingsTitle">Settings</h2>
+      <p class="overlay-sub">How long should each color glow before it changes?</p>
+      <div class="setting-group" role="radiogroup" aria-label="Color duration in seconds">
+        <button class="seg-btn" role="radio" aria-checked="false" data-seconds="1"><span class="seg-num">1</span><span class="seg-unit">sec</span></button>
+        <button class="seg-btn" role="radio" aria-checked="false" data-seconds="2"><span class="seg-num">2</span><span class="seg-unit">sec</span></button>
+        <button class="seg-btn" role="radio" aria-checked="false" data-seconds="3"><span class="seg-num">3</span><span class="seg-unit">sec</span></button>
+        <button class="seg-btn" role="radio" aria-checked="false" data-seconds="4"><span class="seg-num">4</span><span class="seg-unit">sec</span></button>
+        <button class="seg-btn" role="radio" aria-checked="true"  data-seconds="5"><span class="seg-num">5</span><span class="seg-unit">sec</span></button>
+      </div>
+      <div class="setting-hint" id="settingHint">Each color stays on screen for <b>5 seconds</b></div>
+      <div class="volume-block">
+        <div class="volume-head"><span class="volume-label">Volume</span><span class="volume-value" id="volumeValue">85%</span></div>
+        <div class="volume-wrap">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true" opacity=".75">
+            <path d="M4 9.5v5h3.4L12 18.6V5.4L7.4 9.5H4z" fill="currentColor"/>
+          </svg>
+          <input class="volume" id="volumeSlider" type="range" min="0" max="100" step="5" value="85" aria-label="Color sound volume">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" opacity=".75">
+            <path d="M4 9.5v5h3.4L12 18.6V5.4L7.4 9.5H4z" fill="currentColor"/>
+            <path d="M15.5 9.2a4 4 0 010 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M18.2 6.6a7.6 7.6 0 010 10.8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="diag-row">
+        <div class="diag-text">
+          <div class="diag-title">Sound not working?</div>
+          <div class="diag-sub" id="diagLine">Tap Test Sound to check the audio engine.</div>
+        </div>
+        <button class="test-btn" id="testSoundBtn">Test&nbsp;Sound</button>
+      </div>
+      <div class="overlay-actions">
+        <button class="btn primary" id="settingsDoneBtn">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Session-end overlay -->
+  <div class="overlay" id="overlay" role="dialog" aria-modal="true" aria-labelledby="overlayTitle" aria-hidden="true">
+    <div class="overlay-card">
+      <div class="overlay-art" aria-hidden="true">
+        <svg width="86" height="86" viewBox="0 0 86 86" fill="none">
+          <circle cx="43" cy="43" r="40" fill="rgba(255,255,255,.06)" stroke="rgba(255,255,255,.16)" stroke-width="1.5"/>
+          <path d="M43 16l6.6 13.4 14.8 2.1-10.7 10.4 2.5 14.7L43 52.6 29.8 59.6l2.5-14.7L21.6 34.5l14.8-2.1L43 16z" fill="#FFD76A" stroke="#B8860B" stroke-width="1.6" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h2 class="overlay-title" id="overlayTitle">Session complete</h2>
+      <p class="overlay-sub" id="overlaySub">Ten peaceful minutes of color and sound. Beautifully done.</p>
+      <div class="stats">
+        <div class="stat"><div class="stat-num" id="statTime">10:00</div><div class="stat-label">Time Played</div></div>
+        <div class="stat"><div class="stat-num" id="statColors">0</div><div class="stat-label">Colors Shown</div></div>
+        <div class="stat"><div class="stat-num" id="statSounds">0</div><div class="stat-label">Sounds Heard</div></div>
+      </div>
+      <div class="overlay-actions">
+        <button class="btn primary" id="playAgainBtn">Play again</button>
+        <button class="btn ghost" id="doneBtn">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <canvas id="confetti" aria-hidden="true"></canvas>
+
+<script>
+'use strict';
+/* ============================================================
+   ColorPlay — a 10-minute color & sound session for iPad
+   · Play → random colors (red/blue/green/purple) every N seconds
+   · N is adjustable in Settings (1–5 seconds, saved on device)
+   · Each color has its own synthesized voice (Web Audio API)
+   · Timer counts up to 10:00, then auto-stops
+   · Stop button ends the session early at any time
+   ============================================================ */
+
+const SESSION_MS   = 10 * 60 * 1000;   // 10 minutes
+const COLORS       = ['red', 'blue', 'green', 'purple'];
+const COLOR_LABEL  = { red: 'Red', blue: 'Blue', green: 'Green', purple: 'Purple' };
+const HOLD_MIN     = 1, HOLD_MAX = 5, HOLD_DEFAULT = 5;
+
+/* ---------- safe storage (never throws — private mode / sandboxed iframes) ---------- */
+const store = (() => {
+  const memory = {};
+  let usable = false;
+  try {
+    const probe = '__colorplay_probe__';
+    window.localStorage.setItem(probe, '1');
+    window.localStorage.removeItem(probe);
+    usable = true;
+  } catch (e) { usable = false; }
+  return {
+    get(key, fallback) {
+      try {
+        if (usable) { const v = window.localStorage.getItem(key); return v === null ? fallback : v; }
+        return Object.prototype.hasOwnProperty.call(memory, key) ? memory[key] : fallback;
+      } catch (e) { return fallback; }
+    },
+    set(key, value) {
+      memory[key] = value;
+      try { if (usable) window.localStorage.setItem(key, value); } catch (e) { /* ignore */ }
+    }
+  };
+})();
+
+/* ---------- element refs ---------- */
+const $            = (s) => document.querySelector(s);
+const timerText    = $('#timerText');
+const progressFill = $('#progressFill');
+const playBtn      = $('#playBtn');
+const statusText   = $('#statusText');
+const idleHero     = $('#idleHero');
+const idleHoldText = $('#idleHoldText');
+const chipHold     = $('#chipHold');
+const colorView    = $('#colorView');
+const colorName    = $('#colorName');
+const colorKicker  = $('#colorKicker');
+const colorNext    = $('#colorNext');
+const countdownFill= $('#countdownFill');
+const soundBtn     = $('#soundBtn');
+const soundOnIcon  = $('#soundOnIcon');
+const soundOffIcon = $('#soundOffIcon');
+const fullscreenBtn= $('#fullscreenBtn');
+const overlay      = $('#overlay');
+const overlayTitle = $('#overlayTitle');
+const overlaySub   = $('#overlaySub');
+const statTime     = $('#statTime');
+const statColors   = $('#statColors');
+const statSounds   = $('#statSounds');
+const playAgainBtn = $('#playAgainBtn');
+const doneBtn      = $('#doneBtn');
+const toastEl      = $('#toast');
+const settingsBtn  = $('#settingsBtn');
+const settingsOverlay  = $('#settingsOverlay');
+const settingsDoneBtn  = $('#settingsDoneBtn');
+const settingHint      = $('#settingHint');
+const diagLine         = $('#diagLine');
+const testSoundBtn     = $('#testSoundBtn');
+const volumeSlider     = $('#volumeSlider');
+const volumeValue      = $('#volumeValue');
+const segButtons       = Array.from(document.querySelectorAll('.seg-btn[data-seconds]'));
+const layers       = {};
+document.querySelectorAll('.layer[data-layer]').forEach(el => { layers[el.dataset.layer] = el; });
+
+/* ---------- toast ---------- */
+let toastTimer = null;
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 4200);
+}
+
+/* ---------- settings: color hold duration ---------- */
+function clampHold(n) {
+  n = parseInt(n, 10);
+  if (Number.isNaN(n)) return HOLD_DEFAULT;
+  return Math.min(HOLD_MAX, Math.max(HOLD_MIN, n));
+}
+let holdSeconds = clampHold(store.get('colorplay-hold-seconds', String(HOLD_DEFAULT)));
+const holdMs = () => holdSeconds * 1000;
+
+function renderHoldUI() {
+  segButtons.forEach(btn => btn.setAttribute('aria-checked', String(parseInt(btn.dataset.seconds, 10) === holdSeconds)));
+  settingHint.innerHTML = 'Each color stays on screen for <b>' + holdSeconds + ' second' + (holdSeconds === 1 ? '' : 's') + '</b>';
+  chipHold.textContent = holdSeconds + 's';
+  idleHoldText.textContent = String(holdSeconds);
+  if (state !== 'playing') colorNext.textContent = 'Next color in ' + holdSeconds;
+}
+
+function setHoldSeconds(n, announce) {
+  holdSeconds = clampHold(n);
+  store.set('colorplay-hold-seconds', String(holdSeconds));
+  if (state === 'playing') nextColorAt = Date.now() + holdMs();  // apply immediately to current color
+  renderHoldUI();
+  if (announce) showToast('Color duration set to ' + holdSeconds + ' second' + (holdSeconds === 1 ? '' : 's'));
+}
+
+segButtons.forEach(btn => {
+  btn.addEventListener('click', () => setHoldSeconds(btn.dataset.seconds, false));
+});
+
+function updateDiagnostics(note) {
+  const soundState = SoundEngine.isEnabled() ? 'on' : 'off';
+  let engine = SoundEngine.getState();
+  if (engine === 'not-created') engine = SoundEngine.getMode() === 'audio files' ? 'unavailable — using files' : 'idle (starts on first tap)';
+  diagLine.innerHTML = 'Sound: <b>' + soundState + '</b> · Volume: <b>' + SoundEngine.getVolume() + '%</b> · Engine: <b>' + engine + '</b> · Output: <b>' + SoundEngine.getMode() + '</b>' + (note ? '<br>' + note : '');
+}
+
+function renderVolumeUI() {
+  const v = SoundEngine.getVolume();
+  volumeSlider.value = String(v);
+  volumeValue.textContent = v + '%';
+}
+volumeSlider.addEventListener('input', () => {
+  SoundEngine.setVolume(volumeSlider.value);
+  volumeValue.textContent = volumeSlider.value + '%';
+  updateDiagnostics();
+});
+volumeSlider.addEventListener('change', () => {   // fires when the drag ends — play a confirmation chime
+  renderVolumeUI();
+  if (SoundEngine.isEnabled()) SoundEngine.playTest();
+});
+
+function openSettings()  { updateDiagnostics(); renderVolumeUI(); settingsOverlay.classList.add('show'); settingsOverlay.setAttribute('aria-hidden', 'false'); }
+function closeSettings() { settingsOverlay.classList.remove('show'); settingsOverlay.setAttribute('aria-hidden', 'true'); }
+settingsBtn.addEventListener('click', openSettings);
+settingsDoneBtn.addEventListener('click', closeSettings);
+settingsOverlay.addEventListener('click', (e) => { if (e.target === settingsOverlay) closeSettings(); });
+
+testSoundBtn.addEventListener('click', () => {
+  if (!SoundEngine.isEnabled()) {
+    updateDiagnostics('Sound is muted. Tap the speaker icon at the top to unmute, then test again.');
+    return;
+  }
+  SoundEngine.primeFiles();
+  const ok = SoundEngine.playTest();
+  const stamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  if (ok) {
+    updateDiagnostics('Test chime fired at ' + stamp + '. If you heard nothing, the app is fine — check iPad output (volume, Bluetooth route, headphones).');
+  } else {
+    const err = SoundEngine.getLastError();
+    updateDiagnostics('Engine failed: ' + (err && err.message ? err.message : 'unknown error') + '. Try closing and reopening the app.');
+  }
+});
+
+/* ---------- state ---------- */
+let state         = 'idle';            // idle | playing | done
+let startEpoch    = 0;
+let nextColorAt   = 0;
+let currentColor  = null;
+let colorsShown   = 0;
+let soundsHeard   = 0;
+let rafId         = null;
+
+const pad = (n) => String(n).padStart(2, '0');
+const fmtTime = (totalSec) => {
+  totalSec = Math.max(0, Math.floor(totalSec));
+  return pad(Math.floor(totalSec / 60)) + ':' + pad(totalSec % 60);
+};
+
+/* ============================================================
+   SOUND ENGINE — every color has its own voice.
+   Dual path: the Web Audio API is primary; if the AudioContext
+   is missing/blocked/suspended (staged webviews, autoplay-blocked
+   preview frames, old iOS), the same sounds are played from small
+   pre-rendered WAV files via plain <audio> elements instead.
+   ============================================================ */
+const SoundEngine = (() => {
+  let ctx = null;
+  let master = null;
+  let enabled = store.get('colorplay-sound', 'on') === 'on';
+  let lastError = null;
+
+  function clampVolume(v) {
+    v = parseInt(v, 10);
+    if (Number.isNaN(v)) return 85;
+    return Math.min(100, Math.max(0, v));
+  }
+  let volumePct = clampVolume(store.get('colorplay-volume', '85'));
+  const volumeGain = () => Math.pow(volumePct / 100, 1.35);   // perceptual-ish curve
+
+  /* ---------- fallback path: pre-rendered WAV files ---------- */
+  const FILES = {
+    red: 'sounds/red.wav', blue: 'sounds/blue.wav', green: 'sounds/green.wav', purple: 'sounds/purple.wav',
+    start: 'sounds/start.wav', stop: 'sounds/stop.wav', complete: 'sounds/complete.wav', test: 'sounds/test.wav'
+  };
+  const fileEls = {};
+  function ensureFiles() {
+    for (const key in FILES) {
+      if (!fileEls[key]) {
+        try {
+          const a = new Audio();
+          a.preload = 'auto';
+          a.src = FILES[key];
+          fileEls[key] = a;
+        } catch (e) { lastError = e; }
+      }
+    }
+  }
+  function playFile(name) {
+    ensureFiles();
+    const a = fileEls[name];
+    if (!a) { lastError = new Error('Audio element could not be created'); return false; }
+    try {
+      a.pause();
+      a.currentTime = 0;
+      a.volume = Math.min(1, Math.max(0, volumeGain()));
+      const p = a.play();
+      if (p && typeof p.catch === 'function') p.catch((e) => { lastError = e; });
+      return true;
+    } catch (e) { lastError = e; return false; }
+  }
+  /* iOS unlocks <audio> elements only inside a gesture — warm them muted on first touch */
+  function primeFiles() {
+    ensureFiles();
+    for (const key in fileEls) {
+      const a = fileEls[key];
+      try {
+        const v = a.volume;
+        a.volume = 0;
+        const reset = () => { try { a.pause(); a.currentTime = 0; a.volume = v || volumeGain(); } catch (e) { /* ignore */ } };
+        const p = a.play();
+        if (p && typeof p.then === 'function') p.then(reset).catch(reset); else reset();
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  /* ---------- primary path: Web Audio API ---------- */
+  function ensure() {
+    try {
+      if (!ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) { lastError = new Error('Web Audio API is not supported in this browser'); return false; }
+        ctx = new AC();
+        // Safety limiter only — keeps rare peaks from clipping, no longer squashes quiet notes.
+        const comp = ctx.createDynamicsCompressor();
+        comp.threshold.value = -9;
+        comp.knee.value      = 6;
+        comp.ratio.value     = 12;
+        comp.attack.value    = 0.003;
+        comp.release.value   = 0.25;
+        master = ctx.createGain();
+        master.gain.value = volumeGain();
+        master.connect(comp);
+        comp.connect(ctx.destination);
+      }
+      // iOS/Safari start (or re-start) the context suspended until a gesture — always nudge it.
+      if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+      return true;
+    } catch (e) {
+      lastError = e;
+      return false;
+    }
+  }
+
+  function adsrGain(t0, peak, attack, decay) {
+    const g = ctx.createGain();
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.linearRampToValueAtTime(peak, t0 + attack);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + attack + decay);
+    g.connect(master);
+    return g;
+  }
+
+  function partial({ freq, multiple = 1, type = 'sine', t0, attack = 0.02, decay = 2.4,
+                     peak = 0.4, detune = 0, filterFreq = null, filterQ = 1 }) {
+    const osc = ctx.createOscillator();
+    osc.type = type;
+    osc.frequency.value = freq * multiple;
+    osc.detune.value = detune;
+    const env = adsrGain(t0, peak, attack, decay);
+    if (filterFreq) {
+      const f = ctx.createBiquadFilter();
+      f.type = 'lowpass'; f.frequency.value = filterFreq; f.Q.value = filterQ;
+      osc.connect(f); f.connect(env);
+    } else {
+      osc.connect(env);
+    }
+    osc.start(t0);
+    osc.stop(t0 + attack + decay + 0.15);
+  }
+
+  /* RED — "Ember Bowl": deep singing bowl, slow bloom, long resonance. F3. */
+  function playRed(t0) {
+    const F = 174.61;
+    partial({ freq: F, multiple: 1,    t0, attack: 0.09, decay: 4.6, peak: 0.55 });
+    partial({ freq: F, multiple: 2.01, t0, attack: 0.09, decay: 3.6, peak: 0.22 });
+    partial({ freq: F, multiple: 2.94, t0, attack: 0.10, decay: 2.3, peak: 0.10 });
+    partial({ freq: F, multiple: 4.16, t0, attack: 0.12, decay: 1.3, peak: 0.045 });
+  }
+
+  /* GREEN — "Forest Marimba": woody mallet strike on G4. */
+  function playGreen(t0) {
+    const G = 392.0;
+    partial({ freq: G, multiple: 1, type: 'triangle', t0, attack: 0.004, decay: 1.7, peak: 0.62, filterFreq: 2600, filterQ: 2 });
+    partial({ freq: G, multiple: 4, type: 'sine',     t0, attack: 0.003, decay: 0.55, peak: 0.20 });
+    partial({ freq: G, multiple: 9, type: 'sine',     t0, attack: 0.002, decay: 0.18, peak: 0.06 });
+    partial({ freq: 1180, t0, attack: 0.001, decay: 0.07, peak: 0.16 });
+  }
+
+  /* BLUE — "Ocean Chime": glass crystal chime, D5 with gentle beating. */
+  function playBlue(t0) {
+    const D = 587.33;
+    partial({ freq: D, multiple: 1,    t0, attack: 0.006, decay: 3.4, peak: 0.46, detune: +4 });
+    partial({ freq: D, multiple: 1,    t0, attack: 0.006, decay: 3.4, peak: 0.30, detune: -5 });
+    partial({ freq: D, multiple: 2.76, t0, attack: 0.006, decay: 2.2, peak: 0.17 });
+    partial({ freq: D, multiple: 5.40, t0, attack: 0.006, decay: 1.1, peak: 0.06 });
+  }
+
+  /* PURPLE — "Starlight Harp": A5 → E6 arpeggio sparkle. */
+  function playPurple(t0) {
+    const A = 880.0, E = 1318.51;
+    partial({ freq: A, multiple: 1, t0,          attack: 0.004, decay: 1.9, peak: 0.42 });
+    partial({ freq: A, multiple: 2, t0,          attack: 0.004, decay: 1.1, peak: 0.12 });
+    partial({ freq: E, multiple: 1, t0: t0+0.17, attack: 0.004, decay: 2.6, peak: 0.44 });
+    partial({ freq: E, multiple: 2, t0: t0+0.17, attack: 0.004, decay: 1.6, peak: 0.14 });
+    partial({ freq: E, multiple: 4, t0: t0+0.17, attack: 0.004, decay: 0.7, peak: 0.05 });
+  }
+
+  function playStartNotes(t0) {
+    [392.0, 523.25].forEach((f, i) =>
+      partial({ freq: f, t0: t0 + i * 0.14, attack: 0.01, decay: 1.4, peak: 0.32, type: 'triangle', filterFreq: 3000 }));
+  }
+  function playStopNotes(t0) {
+    [523.25, 392.0].forEach((f, i) =>
+      partial({ freq: f, t0: t0 + i * 0.16, attack: 0.01, decay: 1.3, peak: 0.28, type: 'triangle', filterFreq: 3000 }));
+  }
+  function playCompleteNotes(t0) {
+    [523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
+      partial({ freq: f, t0: t0 + i * 0.17, attack: 0.008, decay: 2.8, peak: 0.36 }));
+  }
+  function playTestNotes(t0) {
+    partial({ freq: 659.25, t0, attack: 0.006, decay: 1.1, peak: 0.4 });
+    partial({ freq: 987.77, t0: t0 + 0.12, attack: 0.006, decay: 1.5, peak: 0.4 });
+  }
+
+  const webVoices = {
+    red: playRed, blue: playBlue, green: playGreen, purple: playPurple,
+    start: playStartNotes, stop: playStopNotes, complete: playCompleteNotes, test: playTestNotes
+  };
+
+  const webRunning = () => !!ctx && ctx.state === 'running';
+
+  function playEvent(name) {
+    if (!enabled) return false;
+    ensure();
+    if (webRunning() && webVoices[name]) {
+      webVoices[name](ctx.currentTime + 0.02);
+      return true;
+    }
+    return playFile(name);      // engine blocked/suspended/missing → plain <audio> fallback
+  }
+
+  function setEnabled(v) {
+    enabled = v;
+    store.set('colorplay-sound', v ? 'on' : 'off');
+    if (v) ensure();
+  }
+
+  function setVolume(pct) {
+    volumePct = clampVolume(pct);
+    store.set('colorplay-volume', String(volumePct));
+    if (master && ctx) master.gain.setTargetAtTime(volumeGain(), ctx.currentTime, 0.05);
+    /* if the engine hasn't started yet, ensure() applies the saved level on creation */
+  }
+
+  return {
+    playColor(key) { if (playEvent(key)) soundsHeard += 1; },
+    playStartJingle()  { playEvent('start'); },
+    playStopJingle()   { playEvent('stop'); },
+    playCompleteChime(){ playEvent('complete'); },
+    playTest()         { return playEvent('test'); },
+    setEnabled, setVolume, primeFiles,
+    isEnabled: () => enabled,
+    getVolume: () => volumePct,
+    getState: () => (ctx ? ctx.state : 'not-created'),
+    getMode: () => (webRunning() ? 'web audio' : 'audio files'),
+    unlock() { ensure(); },
+    getLastError: () => lastError
+  };
+})();
+
+/* Prime the audio pipeline on the very first user touch anywhere —
+   iOS only allows audio to start inside a gesture handler. */
+['pointerdown', 'touchstart'].forEach(evt =>
+  window.addEventListener(evt, () => { SoundEngine.unlock(); SoundEngine.primeFiles(); }, { once: true, passive: true })
+);
+
+/* ============================================================
+   WAKE LOCK — keep the iPad screen awake during a session
+   ============================================================ */
+let wakeLock = null;
+async function requestWakeLock() {
+  try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); }
+  catch (e) { /* not critical */ }
+}
+function releaseWakeLock() {
+  try { if (wakeLock) wakeLock.release(); } catch (e) { /* ignore */ }
+  wakeLock = null;
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && state === 'playing') requestWakeLock();
+});
+
+/* ============================================================
+   COLOR CYCLING
+   ============================================================ */
+function pickNextColor() {
+  const pool = COLORS.filter(c => c !== currentColor);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function showColor(key, count) {
+  Object.entries(layers).forEach(([k, el]) => el.classList.toggle('active', k === key));
+  colorName.textContent = COLOR_LABEL[key];
+  colorKicker.textContent = 'Color ' + count;
+  colorName.classList.remove('pop');
+  void colorName.offsetWidth;            // restart pop animation
+  colorName.classList.add('pop');
+}
+
+function advanceColor() {
+  currentColor = pickNextColor();
+  colorsShown += 1;
+  showColor(currentColor, colorsShown);
+  SoundEngine.playColor(currentColor);
+  nextColorAt = Date.now() + holdMs();
+}
+
+/* ============================================================
+   SESSION LIFECYCLE
+   ============================================================ */
+function setIdleUI() {
+  state = 'idle';
+  Object.entries(layers).forEach(([k, el]) => el.classList.toggle('active', k === 'idle'));
+  idleHero.classList.remove('hidden');
+  colorView.classList.add('hidden');
+  timerText.textContent = '00:00';
+  progressFill.style.transform = 'scaleX(0)';
+  countdownFill.style.transform = 'scaleX(1)';
+  colorNext.textContent = 'Next color in ' + holdSeconds;
+  statusText.textContent = 'Tap play to begin';
+  statusText.classList.remove('hidden');
+  playBtn.classList.remove('playing');
+  playBtn.setAttribute('aria-label', 'Start session');
+  playBtn.setAttribute('aria-pressed', 'false');
+}
+
+function startSession() {
+  SoundEngine.unlock();
+  SoundEngine.playStartJingle();
+
+  state       = 'playing';
+  startEpoch  = Date.now();
+  colorsShown = 0;
+  soundsHeard = 0;
+  currentColor= null;
+
+  idleHero.classList.add('hidden');
+  colorView.classList.remove('hidden');
+  statusText.classList.add('hidden');
+  playBtn.classList.add('playing');
+  playBtn.setAttribute('aria-label', 'Stop session');
+  playBtn.setAttribute('aria-pressed', 'true');
+
+  requestWakeLock();
+  advanceColor();              // show first color right away
+  cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(tick);
+}
+
+function tick() {
+  if (state !== 'playing') return;
+  const now = Date.now();
+  const elapsed = now - startEpoch;
+  const hold = holdMs();
+
+  /* timer + session progress */
+  timerText.textContent = fmtTime(Math.min(elapsed, SESSION_MS) / 1000);
+  progressFill.style.transform = 'scaleX(' + Math.min(1, elapsed / SESSION_MS) + ')';
+
+  /* per-color countdown */
+  const remainMs = Math.max(0, nextColorAt - now);
+  countdownFill.style.transform = 'scaleX(' + (hold > 0 ? remainMs / hold : 0) + ')';
+  colorNext.textContent = remainMs > 1000 ? ('Next color in ' + Math.ceil(remainMs / 1000)) : 'Changing…';
+
+  /* advance color when its time is up */
+  if (now >= nextColorAt) advanceColor();
+
+  /* auto-stop at 10:00 */
+  if (elapsed >= SESSION_MS) { finishSession(true); return; }
+
+  rafId = requestAnimationFrame(tick);
+}
+
+function finishSession(auto) {
+  const elapsed = Math.min(Date.now() - startEpoch, SESSION_MS);
+  cancelAnimationFrame(rafId);
+  state = 'done';
+  releaseWakeLock();
+  timerText.textContent = fmtTime(elapsed / 1000);
+  progressFill.style.transform = 'scaleX(' + (elapsed / SESSION_MS) + ')';
+
+  overlayTitle.textContent = auto ? 'Session complete' : 'Session stopped';
+  overlaySub.textContent   = auto
+    ? 'Ten peaceful minutes of color and sound. Beautifully done.'
+    : 'You ended the session early — every color still counted.';
+  statTime.textContent   = fmtTime(elapsed / 1000);
+  statColors.textContent = String(colorsShown);
+  statSounds.textContent = String(soundsHeard);
+
+  overlay.classList.add('show');
+  overlay.setAttribute('aria-hidden', 'false');
+
+  if (auto) {
+    SoundEngine.playCompleteChime();
+    launchConfetti();
+  } else {
+    SoundEngine.playStopJingle();
+  }
+}
+
+function hideOverlay() {
+  overlay.classList.remove('show');
+  overlay.setAttribute('aria-hidden', 'true');
+}
+
+playBtn.addEventListener('click', () => {
+  if (state === 'playing') finishSession(false);
+  else startSession();               // also resets from the done state
+});
+playAgainBtn.addEventListener('click', () => { hideOverlay(); startSession(); });
+doneBtn.addEventListener('click', () => { hideOverlay(); setIdleUI(); });
+
+/* keyboard shortcut (desktop testing): Space = play/stop, F = fullscreen, S = settings */
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Space') { e.preventDefault(); playBtn.click(); }
+  else if (e.key === 'f' || e.key === 'F') { fullscreenBtn.click(); }
+  else if (e.key === 's' || e.key === 'S') { openSettings(); }
+  else if (e.key === 'Escape') { closeSettings(); }
+});
+
+/* ============================================================
+   SOUND & FULLSCREEN TOGGLES
+   ============================================================ */
+function renderSoundBtn(audioFailed) {
+  const on = SoundEngine.isEnabled();
+  soundOnIcon.style.display  = on ? 'block' : 'none';
+  soundOffIcon.style.display = on ? 'none' : 'block';
+  soundBtn.setAttribute('aria-pressed', String(on));
+  soundBtn.setAttribute('aria-label', on ? 'Sound on — tap to mute' : 'Sound off — tap to unmute');
+  soundBtn.classList.toggle('audio-error', !!audioFailed);
+}
+
+soundBtn.addEventListener('click', () => {
+  const turningOn = !SoundEngine.isEnabled();
+  SoundEngine.setEnabled(turningOn);
+  if (turningOn) {
+    SoundEngine.primeFiles();
+    const ok = SoundEngine.playTest();   // audible confirmation that the fix works
+    if (!ok) {
+      const err = SoundEngine.getLastError();
+      showToast('Sound could not start' + (err && err.message ? ': ' + err.message : '') + '. Check that the iPad is not silenced and the volume is up.');
+      renderSoundBtn(true);
+      return;
+    }
+    showToast('Sound on — listen for the chime');
+    renderSoundBtn(false);
+  } else {
+    showToast('Sound off');
+    renderSoundBtn(false);
+  }
+});
+renderSoundBtn(false);
+
+if (document.fullscreenEnabled || document.webkitFullscreenEnabled) {
+  fullscreenBtn.addEventListener('click', () => {
+    const doc = document, el = doc.documentElement;
+    if (!doc.fullscreenElement && !doc.webkitFullscreenElement) {
+      const req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (req) req.call(el).catch(() => {});
+    } else {
+      const exit = doc.exitFullscreen || doc.webkitExitFullscreen;
+      if (exit) exit.call(doc).catch(() => {});
+    }
+  });
+} else {
+  fullscreenBtn.style.display = 'none';   // fullscreen unsupported → hide button
+}
+
+/* ============================================================
+   CONFETTI — brand-colored celebration on auto-complete
+   ============================================================ */
+const confettiCanvas = $('#confetti');
+function launchConfetti() {
+  const ctx2d = confettiCanvas.getContext('2d');
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  confettiCanvas.width  = window.innerWidth  * dpr;
+  confettiCanvas.height = window.innerHeight * dpr;
+  ctx2d.scale(dpr, dpr);
+
+  const palette = ['#ff6a5f', '#57b6ff', '#4de08a', '#c084fc', '#ffd76a', '#ffffff'];
+  const W = window.innerWidth, H = window.innerHeight;
+  const pieces = Array.from({ length: 110 }, () => ({
+    x: Math.random() * W,
+    y: -30 - Math.random() * H * 0.45,
+    w: 6 + Math.random() * 8,
+    h: 10 + Math.random() * 12,
+    vx: (Math.random() - 0.5) * 1.6,
+    vy: 1.6 + Math.random() * 2.4,
+    rot: Math.random() * Math.PI,
+    vr: (Math.random() - 0.5) * 0.12,
+    color: palette[(Math.random() * palette.length) | 0]
+  }));
+
+  const start = performance.now();
+  function frame(now) {
+    const t = now - start;
+    ctx2d.clearRect(0, 0, W, H);
+    let alive = 0;
+    for (const p of pieces) {
+      p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.vy += 0.015;
+      if (p.y < H + 30) alive++;
+      ctx2d.save();
+      ctx2d.translate(p.x, p.y);
+      ctx2d.rotate(p.rot);
+      ctx2d.globalAlpha = Math.max(0, 1 - t / 4200);
+      ctx2d.fillStyle = p.color;
+      ctx2d.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+      ctx2d.restore();
+    }
+    if (alive > 0 && t < 4500) requestAnimationFrame(frame);
+    else ctx2d.clearRect(0, 0, W, H);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* boot */
+renderHoldUI();
+renderVolumeUI();
+setIdleUI();
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a57ebcee0cdad9e5',t:'MTc5NDI0NzQ0Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a57ebcee0cdad9e5',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
